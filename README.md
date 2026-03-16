@@ -2,21 +2,24 @@
 
 **Execution governance layer for AI systems. Contract before execution. Fail-Closed by default.**
 
-Calebear Gate is a concept demo for checking trust conditions before execution.
+Calebear Gate is a public concept-demo project for checking trust conditions before execution.
 
-No contract = no execution.
+**No contract = no execution.**
 
 ---
 
 ## Live Demo
 
-**JWT Auth Demo**  
-https://calebjangcj-hash.github.io/calebear-gate/demo/jwt-auth/
+| Demo | URL |
+|---|---|
+| JWT Auth + ROME Gate | https://calebjangcj-hash.github.io/calebear-gate/demo/jwt-auth/ |
+| Gate Flow (E5→E8) | https://calebjangcj-hash.github.io/calebear-gate/demo/gate-flow/ |
+| 4CASE Interactive | Coming next |
 
-This demo shows a simple PASS / BLOCK flow:
+These demos show simple **PASS / BLOCK** flows:
 
 - **PASS** — required conditions are satisfied
-- **BLOCK** — required conditions are missing or invalid
+- **BLOCK** — required conditions are missing, invalid, or out of scope
 
 ---
 
@@ -26,7 +29,7 @@ Many AI systems are optimized to continue, answer, and act.
 
 Calebear Gate explores a different default:
 
-**execution should not continue unless the required contract is satisfied first.**
+**Execution should not continue unless the required contract is satisfied first.**
 
 The goal is not to make AI sound smarter.  
 The goal is to make execution more controllable, inspectable, and fail-closed.
@@ -55,7 +58,7 @@ Execution is allowed because the required condition is satisfied.
 ### BLOCK
 Execution is denied because the condition is missing, invalid, or out of scope.
 
-This is the central rule of the demo:
+This is the central rule of the project:
 
 **No trust condition → no execution.**
 
@@ -63,29 +66,33 @@ This is the central rule of the demo:
 
 ## Current demo scope
 
-Current public demo includes:
+Current public demos include:
 
 - JWT-style execution gate example
+- ROME-framed execution boundary example
+- Gate Flow visual UX for E5→E8 understanding
 - browser-based PASS / BLOCK decision flow
-- visible decision result in UI
-- minimal concept demonstration of fail-closed execution
+- visible execution decision in UI
+- minimal concept demonstrations of fail-closed execution
 
-Current path:
+Current public paths:
 - `demo/jwt-auth/index.html`
+- `demo/gate-flow/index.html`
 
-This is a public concept demo, not a production security package.
+These are public concept demos, not production security packages.
 
 ---
 
-## What the demo is showing
+## What the demos are showing
 
-The current demo is intentionally simple.
+The current demos are intentionally simple.
 
-It is designed to show:
+They are designed to show:
 
 - how execution can be gated before action
 - how PASS and BLOCK can be made visible
 - how fail-closed behavior can be demonstrated clearly
+- how execution flow can be understood visually before deeper implementation
 
 ---
 
@@ -97,6 +104,8 @@ Calebear Gate is moving toward a broader execution-boundary model, including ide
 - verification before session close
 - separation between research, build, and verify
 - audit-friendly decision flow
+- visual execution mapping
+- contract-first agent control
 
 ---
 
@@ -105,6 +114,8 @@ Calebear Gate is moving toward a broader execution-boundary model, including ide
 Planned next steps:
 
 - JWT auth demo refinement
+- Gate Flow refinement
+- 4CASE Interactive demo
 - finance-gate expansion
 - broader execution-contract examples
 - tool scope control patterns
@@ -118,7 +129,8 @@ Current status:
 
 - GitHub public repo created
 - GitHub Pages live
-- JWT demo deployed
+- JWT Auth + ROME Gate demo published
+- Gate Flow demo being added
 - README expanded for public viewing
 
 ---
