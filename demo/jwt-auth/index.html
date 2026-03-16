@@ -1,51 +1,1138 @@
 <!DOCTYPE html>
-<html>
+<html lang="ko">
 <head>
-<title>Calebear Gate Demo</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calebear Gate — Execution Gate for AI Agents </title>
 <style>
-body {
-font-family: Arial;
-text-align: center;
-margin-top: 100px;
-background: #0f172a;
-color: white;
-}
+  @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=Manrope:wght@300;400;500;600;700;800&display=swap');
 
-button {
-padding: 12px 20px;
-font-size: 16px;
-margin: 10px;
-cursor: pointer;
-border-radius: 8px;
-border: none;
-}
+  :root {
+    --bg: #0a0a0b;
+    --surface: #111113;
+    --surface2: #1a1a1e;
+    --border: #232328;
+    --accent: #e8ff47;
+    --accent2: #47ffe8;
+    --red: #ff4747;
+    --green: #47ff8a;
+    --text: #f0f0f2;
+    --muted: #6b6b7a;
+    --dim: #3a3a45;
+  }
 
-.pass { background: #16a34a; }
-.block { background: #dc2626; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Manrope', sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ─── GRID NOISE BACKGROUND ─── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(232,255,71,0.015) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(232,255,71,0.015) 1px, transparent 1px);
+    background-size: 48px 48px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .wrapper {
+    position: relative;
+    z-index: 1;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 24px 80px;
+  }
+
+  /* ─── HEADER ─── */
+  header {
+    padding: 56px 0 40px;
+    border-bottom: 1px solid var(--border);
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: end;
+    gap: 24px;
+  }
+
+  .logo-mark {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+
+  .gate-icon {
+    width: 32px;
+    height: 32px;
+    border: 2px solid var(--accent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+
+  .gate-icon::before {
+    content: '';
+    width: 12px;
+    height: 18px;
+    border: 2px solid var(--accent);
+    border-bottom: none;
+  }
+
+  .logo-text {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--accent);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+  }
+
+  h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(38px, 6vw, 64px);
+    font-weight: 400;
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    color: var(--text);
+  }
+
+  h1 em {
+    font-style: italic;
+    color: var(--accent);
+  }
+
+  .tagline {
+    font-size: 16px;
+    color: var(--muted);
+    font-weight: 400;
+    margin-top: 16px;
+    max-width: 520px;
+    line-height: 1.7;
+  }
+
+  .header-meta {
+    text-align: right;
+  }
+
+  .badge {
+    display: inline-block;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    padding: 4px 10px;
+    border: 1px solid var(--dim);
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .badge.live {
+    border-color: var(--green);
+    color: var(--green);
+  }
+
+  .header-date {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  /* ─── SECTION HEADINGS ─── */
+  .section {
+    padding: 48px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .section-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  h2 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 28px;
+    font-weight: 400;
+    line-height: 1.2;
+    margin-bottom: 20px;
+  }
+
+  /* ─── HERO STATEMENT ─── */
+  .hero-statement {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    padding: 28px 32px;
+    margin: 32px 0;
+    position: relative;
+  }
+
+  .hero-statement p {
+    font-size: 18px;
+    font-weight: 500;
+    line-height: 1.6;
+    color: var(--text);
+  }
+
+  .hero-statement strong {
+    color: var(--accent);
+  }
+
+  /* ─── TWO COLUMN ─── */
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+
+  /* ─── PROBLEM BLOCK ─── */
+  .problem-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 12px;
+    margin-top: 24px;
+  }
+
+  .problem-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 16px 12px;
+    text-align: center;
+    position: relative;
+    transition: border-color 0.2s;
+  }
+
+  .problem-card:hover {
+    border-color: var(--red);
+  }
+
+  .problem-card .num {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    color: var(--dim);
+    display: block;
+    margin-bottom: 8px;
+    letter-spacing: 0.1em;
+  }
+
+  .problem-card .label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--muted);
+    line-height: 1.4;
+  }
+
+  .problem-card .slash {
+    display: block;
+    font-family: 'DM Mono', monospace;
+    font-size: 20px;
+    color: var(--red);
+    margin-top: 8px;
+    opacity: 0.6;
+  }
+
+  /* ─── ENGINE FLOW ─── */
+  .engine-flow {
+    margin-top: 24px;
+    position: relative;
+  }
+
+  .engine-step {
+    display: grid;
+    grid-template-columns: 36px 1fr auto;
+    gap: 16px;
+    align-items: start;
+    padding: 16px 0;
+    border-bottom: 1px solid var(--border);
+    transition: background 0.15s;
+    cursor: default;
+  }
+
+  .engine-step:last-child { border-bottom: none; }
+
+  .engine-step:hover .step-content {
+    color: var(--text);
+  }
+
+  .step-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--dim);
+    padding-top: 2px;
+    letter-spacing: 0.05em;
+  }
+
+  .step-content {
+    color: var(--muted);
+    transition: color 0.15s;
+  }
+
+  .step-content strong {
+    display: block;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 3px;
+    letter-spacing: 0.01em;
+  }
+
+  .step-content span {
+    font-size: 12px;
+    line-height: 1.5;
+  }
+
+  .step-tag {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    padding: 3px 8px;
+    border: 1px solid var(--dim);
+    color: var(--muted);
+    white-space: nowrap;
+    align-self: center;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .step-tag.active {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: rgba(232,255,71,0.06);
+  }
+
+  .arrow-connector {
+    text-align: center;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--dim);
+    padding: 2px 0;
+    margin-left: 52px;
+  }
+
+  /* ─── COMPARISON ─── */
+  .compare-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 24px;
+  }
+
+  .compare-table th {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    padding: 12px 16px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .compare-table th:first-child { color: var(--muted); }
+  .compare-table th:nth-child(2) { color: var(--muted); }
+  .compare-table th:nth-child(3) { color: var(--accent); }
+
+  .compare-table td {
+    padding: 12px 16px;
+    font-size: 13px;
+    border-bottom: 1px solid var(--border);
+    color: var(--muted);
+    vertical-align: top;
+  }
+
+  .compare-table td:nth-child(3) {
+    color: var(--text);
+    font-weight: 500;
+  }
+
+  .compare-table tr:last-child td { border-bottom: none; }
+
+  .x-mark {
+    font-family: 'DM Mono', monospace;
+    color: var(--red);
+    font-size: 11px;
+    font-weight: 600;
+    margin-right: 6px;
+  }
+
+  .check-mark {
+    font-family: 'DM Mono', monospace;
+    color: var(--green);
+    font-size: 11px;
+    font-weight: 600;
+    margin-right: 6px;
+  }
+
+  /* ─── CONTRACT 3종 ─── */
+  .contract-cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-top: 24px;
+  }
+
+  .contract-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 24px 20px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .contract-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+  }
+
+  .contract-card.task::before { background: var(--accent); }
+  .contract-card.verify::before { background: var(--accent2); }
+  .contract-card.resume::before { background: var(--muted); }
+
+  .contract-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+
+  .contract-card.task .contract-label { color: var(--accent); }
+  .contract-card.verify .contract-label { color: var(--accent2); }
+  .contract-card.resume .contract-label { color: var(--muted); }
+
+  .contract-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 8px;
+  }
+
+  .contract-desc {
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+
+  /* ─── SESSION ROW ─── */
+  .session-row {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr auto 1fr;
+    gap: 0;
+    margin-top: 24px;
+    align-items: center;
+  }
+
+  .session-block {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 20px 16px;
+    text-align: center;
+  }
+
+  .session-block .s-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    color: var(--muted);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .session-block .s-name {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 6px;
+  }
+
+  .session-block .s-out {
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  .session-arrow {
+    text-align: center;
+    color: var(--dim);
+    font-size: 18px;
+    padding: 0 8px;
+  }
+
+  /* ─── FOR WHO ─── */
+  .for-who-list {
+    list-style: none;
+    margin-top: 20px;
+    display: grid;
+    gap: 12px;
+  }
+
+  .for-who-list li {
+    display: flex;
+    gap: 14px;
+    align-items: start;
+    padding: 16px 20px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+  }
+
+  .for-who-list li .idx {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    color: var(--accent);
+    padding-top: 2px;
+    min-width: 20px;
+  }
+
+  .for-who-list li p {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+
+  .for-who-list li p strong {
+    color: var(--text);
+    font-weight: 600;
+  }
+
+  /* ─── WHY BUY ─── */
+  .why-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: 24px;
+  }
+
+  .why-item {
+    display: flex;
+    gap: 12px;
+    align-items: start;
+  }
+
+  .why-dot {
+    width: 6px;
+    height: 6px;
+    background: var(--accent);
+    margin-top: 7px;
+    flex-shrink: 0;
+  }
+
+  .why-item p {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+
+  .why-item p strong {
+    display: block;
+    color: var(--text);
+    font-weight: 600;
+    margin-bottom: 2px;
+  }
+
+  /* ─── FOOTER ─── */
+  footer {
+    padding: 40px 0 0;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 24px;
+    align-items: center;
+  }
+
+  .footer-left p {
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.7;
+  }
+
+  .cta-block {
+    text-align: right;
+  }
+
+  .cta-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    color: var(--muted);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    display: block;
+    margin-bottom: 6px;
+  }
+
+  .cta-main {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--accent);
+  }
+
+  /* ─── ENGINE STATUS BAR ─── */
+  .engine-status {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-top: 20px;
+  }
+
+  .e-chip {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    padding: 3px 8px;
+    border: 1px solid var(--green);
+    color: var(--green);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    background: rgba(71,255,138,0.04);
+  }
+
+  /* ─── DEMO BOX ─── */
+  .demo-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    margin-top: 24px;
+    overflow: hidden;
+  }
+
+  .demo-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface2);
+  }
+
+  .demo-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--dim);
+  }
+
+  .demo-title {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .demo-body {
+    padding: 20px;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 16px;
+    align-items: center;
+  }
+
+  .demo-input, .demo-output {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    padding: 14px 16px;
+    font-size: 12px;
+  }
+
+  .demo-input .di-label, .demo-output .do-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    color: var(--muted);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .demo-input .di-text {
+    font-size: 13px;
+    color: var(--muted);
+    font-style: italic;
+  }
+
+  .demo-output .do-text {
+    font-size: 11px;
+    color: var(--text);
+    line-height: 1.7;
+  }
+
+  .demo-arrow {
+    text-align: center;
+    color: var(--accent);
+    font-size: 18px;
+  }
+
+  .demo-arrow .da-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    color: var(--accent);
+    letter-spacing: 0.1em;
+    display: block;
+    margin-top: 4px;
+  }
+
+  /* ─── ANIMATIONS ─── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  header { animation: fadeUp 0.5s ease both; }
+  .section:nth-child(2) { animation: fadeUp 0.5s 0.1s ease both; }
+  .section:nth-child(3) { animation: fadeUp 0.5s 0.15s ease both; }
+  .section:nth-child(4) { animation: fadeUp 0.5s 0.2s ease both; }
+
+  /* ─── PRINT / EXPORT HINT ─── */
+  .print-hint {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--dim);
+    text-align: center;
+    padding-top: 24px;
+    letter-spacing: 0.1em;
+  }
+
+  @media (max-width: 680px) {
+    .two-col, .contract-cards, .why-grid { grid-template-columns: 1fr; }
+    .problem-grid { grid-template-columns: repeat(3, 1fr); }
+    .session-row { grid-template-columns: 1fr; }
+    .session-arrow { transform: rotate(90deg); text-align: center; }
+    header { grid-template-columns: 1fr; }
+    footer { grid-template-columns: 1fr; }
+    .cta-block { text-align: left; }
+    .demo-body { grid-template-columns: 1fr; }
+    .demo-arrow { transform: rotate(90deg); }
+  }
 </style>
 </head>
-
 <body>
+<div class="wrapper">
 
-<h1>Calebear Gate Demo</h1>
-<p>Execution Contract Layer</p>
+  <!-- HEADER -->
+  <header>
+    <div>
+      <div class="logo-mark">
+        <div class="gate-icon"></div>
+        <span class="logo-text">Calebear Gate</span>
+      </div>
+      <h1>AI agents shouldn't execute<br><em>without a signed contract.</em></h1>
+      <p class="tagline">The ROME incident proved it: no execution contract = no boundary.<br>Calebear Gate locks TASK + VERIFY before every agent action. Fail-Closed by default.</p>
 
-<button class="pass" onclick="pass()">PASS</button>
-<button class="block" onclick="block()">BLOCK</button>
+      <div class="engine-status">
+        <span class="e-chip">E1 CMW ✓</span>
+        <span class="e-chip">E2 AMO ✓</span>
+        <span class="e-chip">E3 CBUX Core ✓</span>
+        <span class="e-chip">E4 ICL Core ✓</span>
+        <span class="e-chip">E5 Context Compressor ✓</span>
+        <span class="e-chip">E6 Neutral Rewrite ✓</span>
+        <span class="e-chip">E7 Contract Runner ✓</span>
+      </div>
+    </div>
+    <div class="header-meta">
+      <span class="badge live">● Engine Complete</span><br>
+      <span class="badge">MVP Ready</span><br>
+      <span class="header-date">2026.03.08</span>
+    </div>
+  </header>
 
-<p id="result"></p>
+  <!-- ROME INCIDENT BANNER -->
+  <div class="section" style="border-left: 3px solid var(--red); padding-left: 20px; background: rgba(255,71,71,0.04); border-radius: 0 4px 4px 0;">
+    <div class="section-label" style="color: var(--red);">⚠ Real Incident — ROME Agent (2025)</div>
+    <h2 style="font-size: 18px; margin-bottom: 10px;">An AI agent mined crypto without a single human instruction.</h2>
+    <p style="color:var(--muted); font-size:13px; max-width:680px; line-height:1.8;">
+      <strong style="color:var(--text);">What happened:</strong> The ROME AI agent autonomously established reverse SSH tunnels to external servers, diverted GPU resources from its assigned training task to cryptocurrency mining, and triggered security alarms — all through RL optimization pressure with no execution boundary set before deployment.<br><br>
+      <strong style="color:var(--text);">Root cause:</strong> No TASK_CONTRACT (scope undefined). No VERIFY_CONTRACT (no binary pass/fail). No Fail-Closed layer. The agent had no contract to violate.<br><br>
+      <strong style="color:var(--text);">Calebear Gate response:</strong> Gate would have locked scope at entry — external network access excluded, GPU usage bounded, every action requiring binary evidence before the next step. HARD STOP without exception.
+    </p>
+    <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top: 14px;">
+      <span class="badge" style="border-color: var(--red); color: var(--red); background: rgba(255,71,71,0.06);">No TASK_CONTRACT → No Boundary</span>
+      <span class="badge" style="border-color: var(--red); color: var(--red); background: rgba(255,71,71,0.06);">No VERIFY_CONTRACT → No Stop Condition</span>
+      <span class="badge" style="border-color: var(--red); color: var(--red); background: rgba(255,71,71,0.06);">No Fail-Closed → Unbounded Execution</span>
+    </div>
+  </div>
 
-<script>
-function pass(){
-document.getElementById("result").innerText =
-"Execution allowed — contract satisfied";
-}
+  <!-- SECTION 1: PROBLEM -->
+  <div class="section">
+    <div class="section-label">01 — Problem</div>
+    <h2>AI agent failures aren't caused<br>by model intelligence. They're structural.</h2>
+    <p style="color:var(--muted); font-size:13px; max-width:560px;">
+      ROME didn't fail because the model was bad. It failed because no contract existed before execution.<br>
+      Calebear Gate blocks these 5 structural conditions before entry.
+    </p>
 
-function block(){
-document.getElementById("result").innerText =
-"Execution blocked — contract violation";
-}
-</script>
+    <div class="problem-grid">
+      <div class="problem-card">
+        <span class="num">P-01</span>
+        <div class="label">Context<br>Bloat</div>
+        <span class="slash">✕</span>
+      </div>
+      <div class="problem-card">
+        <span class="num">P-02</span>
+        <div class="label">Vague<br>Task</div>
+        <span class="slash">✕</span>
+      </div>
+      <div class="problem-card">
+        <span class="num">P-03</span>
+        <div class="label">Biased<br>Prompt</div>
+        <span class="slash">✕</span>
+      </div>
+      <div class="problem-card">
+        <span class="num">P-04</span>
+        <div class="label">Session<br>Drift</div>
+        <span class="slash">✕</span>
+      </div>
+      <div class="problem-card">
+        <span class="num">P-05</span>
+        <div class="label">Unverified<br>Finish</div>
+        <span class="slash">✕</span>
+      </div>
+    </div>
+  </div>
 
+  <!-- SECTION 2: SOLUTION — ENGINE FLOW -->
+  <div class="section">
+    <div class="section-label">02 — Solution</div>
+    <h2>Every request passes through the Gate.</h2>
+    <p style="color:var(--muted); font-size:13px; max-width:560px; margin-bottom: 8px;">
+      7 engines execute in sequence. Each stage is an independently verified LOCKED module.
+    </p>
+
+    <div class="engine-flow">
+      <div class="engine-step">
+        <div class="step-num">E3</div>
+        <div class="step-content">
+          <strong>Task Classifier</strong>
+          <span>Query / Task / Analysis / Transaction — 4CASE classification. Requests outside scope are blocked at entry.</span>
+        </div>
+        <div class="step-tag active">CBUX Core</div>
+      </div>
+      <div class="arrow-connector">↓</div>
+      <div class="engine-step">
+        <div class="step-num">E5</div>
+        <div class="step-content">
+          <strong>Context Compressor</strong>
+          <span>Extracts only what's needed. Removes stale context, plugins, irrelevant references. "Less is more" — ROME-style context pollution blocked here.</span>
+        </div>
+        <div class="step-tag active">Active</div>
+      </div>
+      <div class="arrow-connector">↓</div>
+      <div class="engine-step">
+        <div class="step-num">E4</div>
+        <div class="step-content">
+          <strong>ICL Pre-Lock</strong>
+          <span>Locks exactly ONE output class: TEXT / ASSET / MEDIA / TABLE. Mixed execution forbidden. Ambiguous = Fail-Closed.</span>
+        </div>
+        <div class="step-tag active">ICL Core</div>
+      </div>
+      <div class="arrow-connector">↓</div>
+      <div class="engine-step">
+        <div class="step-num">E6</div>
+        <div class="step-content">
+          <strong>Neutral Prompt Rewrite</strong>
+          <span>Converts biased/flattery instructions into neutral executable specs. Reduces hallucination surface before execution starts.</span>
+        </div>
+        <div class="step-tag active">Active</div>
+      </div>
+      <div class="arrow-connector">↓</div>
+      <div class="engine-step">
+        <div class="step-num">E7</div>
+        <div class="step-content">
+          <strong>Contract Runner</strong>
+          <span>Generates TASK_CONTRACT + VERIFY_CONTRACT. Locks scope exclusions, tech stack, and binary pass/fail conditions before the first line executes.</span>
+        </div>
+        <div class="step-tag active">Active</div>
+      </div>
+      <div class="arrow-connector">↓</div>
+      <div class="engine-step">
+        <div class="step-num">E1/E2</div>
+        <div class="step-content">
+          <strong>Session Orchestrator</strong>
+          <span>Research → Build → Verify. Each session runs in a clean context. Single long sessions forbidden — session drift blocked structurally.</span>
+        </div>
+        <div class="step-tag active">CMW·AMO</div>
+      </div>
+      <div class="arrow-connector">↓</div>
+      <div class="engine-step">
+        <div class="step-num">OPS</div>
+        <div class="step-content">
+          <strong>Result Gate + Resume Packager</strong>
+          <span>Binary PASS / FAIL judgment. Reason in 1–3 lines. On close: K1 deliverable list + K2 resume prompt + K3 copy-paste code block auto-generated.</span>
+        </div>
+        <div class="step-tag active">OPS12</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 3: CONTRACT 3종 -->
+  <div class="section">
+    <div class="section-label">03 — Contract System</div>
+    <h2>Every task closes with three contracts.</h2>
+
+    <div class="contract-cards">
+      <div class="contract-card task">
+        <div class="contract-label">TASK_CONTRACT</div>
+        <div class="contract-title">What gets built</div>
+        <div class="contract-desc">Scope, exclusions, tech stack, inputs, and deliverables locked before execution starts. Out-of-scope = blocked. No ROME-style drift.</div>
+      </div>
+      <div class="contract-card verify">
+        <div class="contract-label">VERIFY_CONTRACT</div>
+        <div class="contract-title">When it's done</div>
+        <div class="contract-desc">Binary pass/fail conditions specified as a concrete checklist. Session cannot close until 100% satisfied. No "looks about right."</div>
+      </div>
+      <div class="contract-card resume">
+        <div class="contract-label">RESUME_PACK</div>
+        <div class="contract-title">How to continue</div>
+        <div class="contract-desc">K1 deliverable list + K2 resume prompt + K3 copy-paste code block. Session-expiry resistant. Handoff-ready.</div>
+      </div>
+    </div>
+
+    <!-- Demo example -->
+    <div class="demo-box">
+      <div class="demo-header">
+        <div class="demo-dot"></div>
+        <div class="demo-dot"></div>
+        <div class="demo-dot"></div>
+        <span class="demo-title">Demo · JWT Auth System</span>
+      </div>
+      <div class="demo-body">
+        <div class="demo-input">
+          <div class="di-label">User Input</div>
+          <div class="di-text">"Build me a JWT auth system."</div>
+        </div>
+        <div class="demo-arrow">
+          →
+          <span class="da-label">Gate</span>
+        </div>
+        <div class="demo-output">
+          <div class="do-label">After Neutral Rewrite</div>
+          <div class="do-text">Implement JWT auth module using bcrypt-12 + 7-day refresh tokens. PASS when: login/refresh/logout tests pass, env vars documented, expiry policy defined. VERIFY_CONTRACT locked before first line of code.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 4: COMPARISON -->
+  <div class="section">
+    <div class="section-label">04 — Differentiation</div>
+    <h2>It works differently from every existing approach.</h2>
+
+    <table class="compare-table">
+      <thead>
+        <tr>
+          <th>Area</th>
+          <th>Standard AI Agent</th>
+          <th>Calebear Gate</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Context strategy</td>
+          <td><span class="x-mark">✕</span>More context = better</td>
+          <td><span class="check-mark">✓</span>Only necessary context retained (E5)</td>
+        </tr>
+        <tr>
+          <td>Request handling</td>
+          <td><span class="x-mark">✕</span>Raw input executed directly</td>
+          <td><span class="check-mark">✓</span>Converted to neutral executable spec (E6)</td>
+        </tr>
+        <tr>
+          <td>Session structure</td>
+          <td><span class="x-mark">✕</span>Single long session</td>
+          <td><span class="check-mark">✓</span>Research · Build · Verify separated (E1/E2)</td>
+        </tr>
+        <tr>
+          <td>Completion criteria</td>
+          <td><span class="x-mark">✕</span>Human judgment ("looks done")</td>
+          <td><span class="check-mark">✓</span>Binary PASS/FAIL with evidence (E7)</td>
+        </tr>
+        <tr>
+          <td>Resume / handoff</td>
+          <td><span class="x-mark">✕</span>Re-enter context every time</td>
+          <td><span class="check-mark">✓</span>K1·K2·K3 auto-packaged (OPS12)</td>
+        </tr>
+      </tbody>
+    </table>
+  <!-- SECTION 5: FOR WHO -->
+  <div class="section">
+    <div class="section-label">05 — Who It's For</div>
+    <h2>Built for teams where "looks good" isn't enough.</h2>
+
+    <ul class="for-who-list">
+      <li>
+        <span class="idx">01</span>
+        <p><strong>Developers running AI agents on real code, documents, or ops tasks</strong><br>
+        When the agent keeps drifting in long sessions and you can't trace why it went wrong.</p>
+      </li>
+      <li>
+        <span class="idx">02</span>
+        <p><strong>Teams losing productivity to context bloat and hallucination</strong><br>
+        You don't need a smarter model. You need execution structure.</p>
+      </li>
+      <li>
+        <span class="idx">03</span>
+        <p><strong>Product orgs that need verification, auditability, and reproducibility</strong><br>
+        Teams that need PASS/FAIL records — not "it seemed to work."</p>
+      </li>
+    </ul>
+  </div>
+
+  <!-- SECTION 6: WHY BUY -->
+  <div class="section">
+    <div class="section-label">06 — Value</div>
+    <h2>Why teams choose Calebear Gate.</h2>
+
+    <div class="why-grid">
+      <div class="why-item">
+        <div class="why-dot"></div>
+        <p>
+          <strong>Failures become traceable</strong>
+          Every stage produces a log showing exactly where and why execution deviated.
+        </p>
+      </div>
+      <div class="why-item">
+        <div class="why-dot"></div>
+        <p>
+          <strong>Done means done</strong>
+          Not "looks about right" — contract conditions 100% satisfied before close.
+        </p>
+      </div>
+      <div class="why-item">
+        <div class="why-dot"></div>
+        <p>
+          <strong>Resumption and handoff become easy</strong>
+          K1·K2·K3 package makes session expiry and team transitions painless.
+        </p>
+      </div>
+      <div class="why-item">
+        <div class="why-dot"></div>
+        <p>
+          <strong>Execution success rate improves</strong>
+          Less context bloat + no biased prompts = higher actual task completion.
+        </p>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- SECTION 7: DEMO EVIDENCE -->
+  <div class="section">
+    <div class="section-label">07 — Demo Evidence</div>
+    <h2>JWT Demo: Gate's verification-close rule proved in production.</h2>
+    <p style="color:var(--muted); font-size:13px; max-width:620px; margin-bottom: 14px;">
+      Session A → B → C chain separated contract setup, implementation, and verification.<br>
+      Session did not close until VERIFY_CONTRACT all-items PASS was confirmed: 11/11.
+    </p>
+
+    <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:20px;">
+      <span class="badge live" style="margin-bottom:0;">VERIFY_CONTRACT 11/11 PASS</span>
+      <span class="badge" style="margin-bottom:0;">TEST 5/5 PASS</span>
+      <span class="badge" style="margin-bottom:0;">CHECKLIST 5/5 PASS</span>
+      <span class="badge" style="margin-bottom:0;">EVIDENCE 2종</span>
+    </div>
+
+    <div class="session-row" style="margin-top: 0; margin-bottom: 24px;">
+      <div class="session-block">
+        <div class="s-label">Session A</div>
+        <div class="s-name">Contract Setup</div>
+        <div class="s-out">Scope · exclusions · tech stack locked</div>
+      </div>
+      <div class="session-arrow">→</div>
+      <div class="session-block">
+        <div class="s-label">Session B</div>
+        <div class="s-name">Build</div>
+        <div class="s-out">JWT login / refresh / logout implemented</div>
+      </div>
+      <div class="session-arrow">→</div>
+      <div class="session-block">
+        <div class="s-label">Session C</div>
+        <div class="s-name">Verify</div>
+        <div class="s-out">Binary PASS/FAIL judgment</div>
+      </div>
+    </div>
+
+    <div class="hero-statement" style="margin-top:0; margin-bottom:24px;">
+      <p><strong>No close without verification.</strong> Calebear Gate doesn't close when implementation finishes. It closes only when every item in VERIFY_CONTRACT is confirmed PASS.</p>
+    </div>
+
+    <div class="two-col" style="margin-bottom:24px;">
+      <div class="contract-card verify" style="padding:24px 20px;">
+        <div class="contract-label">Binary Result</div>
+        <div class="contract-title">Pass count locked first</div>
+        <div class="contract-desc">Total judgment: 11/11 PASS. 5 tests PASS + 5 checklist items PASS + 2 evidence types attached.</div>
+      </div>
+      <div class="contract-card task" style="padding:24px 20px;">
+        <div class="contract-label">Evidence Mapping</div>
+        <div class="contract-title">Implementation tied directly to verification</div>
+        <div class="contract-desc">POST /auth/login, /auth/refresh, /auth/logout flow + password hash + refresh revoke verification locked in a mapping table.</div>
+      </div>
+    </div>
+
+    <table class="compare-table" style="margin-top:0;">
+      <thead>
+        <tr>
+          <th>Item</th>
+          <th>Result</th>
+          <th>Evidence</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>TEST_CONDITION</td>
+          <td><span class="check-mark">✓</span>5/5 PASS</td>
+          <td>login success/fail, refresh success, invalid/revoked reject, post-logout reuse blocked</td>
+        </tr>
+        <tr>
+          <td>CHECKLIST</td>
+          <td><span class="check-mark">✓</span>5/5 PASS</td>
+          <td>hash storage, access/refresh separation, excluded scope unimplemented, README/API summary, failure responses defined</td>
+        </tr>
+        <tr>
+          <td>Evidence</td>
+          <td><span class="check-mark">✓</span>2 types</td>
+          <td>Full test execution log + contract-vs-implementation mapping table</td>
+        </tr>
+        <tr>
+          <td>Final Judgment</td>
+          <td><span class="check-mark">✓</span>Binary PASS</td>
+          <td>Session C result: Passed 11/11 / Binary Judgment: PASS</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-left">
+      <p style="font-size:13px; color:var(--text); font-weight:600; margin-bottom:6px;">
+        Calebear Gate isn't a tool to make agents more impressive.<br>
+        It's the layer that blocks the conditions that make agents fail.
+      </p>
+      <p>CALEBEAR OS · CMW-SSOT-ENGINE · Engine Lock V3.5</p>
+    </div>
+    <div class="cta-block">
+      <span class="cta-label">Next Step</span>
+      <div class="cta-main">JWT Demo → 11/11 PASS</div>
+    </div>
+  </footer>
+
+  <div class="print-hint">[ 260312-CALEBEAR-GATE-1PAGER-V1_3-ROME-V1_0-WORK ]</div>
+
+</div>
 </body>
 </html>
