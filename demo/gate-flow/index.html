@@ -1,872 +1,1185 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CALEBEAR Gate — Visual UX v0.1</title>
+<title>Calebear Gate — Live Execution Simulation</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&display=swap');
-
-  :root {
-    --bg: #080b0f;
-    --bg2: #0d1117;
-    --bg3: #111820;
-    --border: #1e2a36;
-    --border-active: #2a3f52;
-    --text: #c8d6e0;
-    --text-dim: #4a6070;
-    --text-mid: #7a9ab0;
-    --pass: #00e57a;
-    --pass-dim: #00e57a22;
-    --fail: #f5a623;
-    --fail-dim: #f5a62322;
-    --block: #ff3355;
-    --block-dim: #ff335522;
-    --accent: #0af;
-    --accent-dim: #0af2;
-    --mono: 'Space Mono', monospace;
-    --sans: 'Syne', sans-serif;
-  }
-
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: var(--sans);
-    min-height: 100vh;
-    overflow-x: hidden;
-  }
-
-  /* HEADER */
-  .header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 20px 40px;
-    border-bottom: 1px solid var(--border);
-    background: var(--bg2);
-    position: sticky;
-    top: 0;
-    z-index: 100;
-  }
-
-  .logo {
-    font-family: var(--mono);
-    font-size: 13px;
-    color: var(--accent);
-    letter-spacing: 0.08em;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-
-  .logo-dot {
-    width: 8px; height: 8px;
-    background: var(--pass);
-    border-radius: 50%;
-    animation: pulse 2s infinite;
-  }
-
-  @keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.3; }
-  }
-
-  .tagline {
-    font-family: var(--mono);
-    font-size: 11px;
-    color: var(--text-dim);
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-  }
-
-  .status-bar {
-    display: flex;
-    gap: 20px;
-    align-items: center;
-  }
-
-  .status-pill {
-    font-family: var(--mono);
-    font-size: 10px;
-    padding: 4px 10px;
-    border-radius: 2px;
-    letter-spacing: 0.1em;
-  }
-
-  .status-pill.pass { background: var(--pass-dim); color: var(--pass); border: 1px solid var(--pass); }
-  .status-pill.fail { background: var(--fail-dim); color: var(--fail); border: 1px solid var(--fail); }
-  .status-pill.block { background: var(--block-dim); color: var(--block); border: 1px solid var(--block); }
-
-  /* INPUT BAR */
-  .input-section {
-    padding: 40px 40px 0;
-    max-width: 1400px;
-    margin: 0 auto;
-  }
-
-  .input-label {
-    font-family: var(--mono);
-    font-size: 10px;
-    color: var(--text-dim);
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    margin-bottom: 12px;
-  }
-
-  .input-box {
-    background: var(--bg3);
-    border: 1px solid var(--border-active);
-    border-left: 3px solid var(--accent);
-    padding: 16px 20px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 20px;
-  }
-
-  .input-text {
-    font-family: var(--mono);
-    font-size: 18px;
-    color: var(--text);
-    letter-spacing: 0.03em;
-  }
-
-  .input-meta {
-    font-family: var(--mono);
-    font-size: 10px;
-    color: var(--text-dim);
-    white-space: nowrap;
-  }
-
-  .arrow-flow {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 20px 40px;
-    gap: 8px;
-    max-width: 1400px;
-    margin: 0 auto;
-  }
-
-  .arrow-step {
-    font-family: var(--mono);
-    font-size: 10px;
-    color: var(--text-dim);
-    letter-spacing: 0.1em;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .arrow-chevron {
-    color: var(--border-active);
-    font-size: 14px;
-  }
-
-  .arrow-step.active { color: var(--accent); }
-
-  /* GRID */
-  .grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1px;
-    background: var(--border);
-    max-width: 1400px;
-    margin: 0 auto 1px;
-    border: 1px solid var(--border);
-  }
-
-  .screen-card {
-    background: var(--bg2);
-    padding: 0;
-    opacity: 0;
-    transform: translateY(20px);
-    animation: fadeUp 0.5s ease forwards;
-  }
-
-  .screen-card:nth-child(1) { animation-delay: 0.1s; }
-  .screen-card:nth-child(2) { animation-delay: 0.25s; }
-  .screen-card:nth-child(3) { animation-delay: 0.4s; }
-  .screen-card:nth-child(4) { animation-delay: 0.55s; }
-
-  @keyframes fadeUp {
-    to { opacity: 1; transform: translateY(0); }
-  }
-
-  .card-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 16px 24px;
-    border-bottom: 1px solid var(--border);
-    background: var(--bg);
-  }
-
-  .card-node {
-    font-family: var(--mono);
-    font-size: 10px;
-    color: var(--accent);
-    letter-spacing: 0.12em;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .card-node::before {
-    content: '';
-    width: 6px; height: 6px;
-    background: var(--accent);
-    border-radius: 50%;
-  }
-
-  .card-title {
-    font-family: var(--sans);
-    font-size: 16px;
-    font-weight: 700;
-    color: var(--text);
-    letter-spacing: -0.01em;
-  }
-
-  .card-body {
-    padding: 24px;
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-  }
-
-  /* FIELD BLOCKS */
-  .field {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-  }
-
-  .field-label {
-    font-family: var(--mono);
-    font-size: 9px;
-    color: var(--text-dim);
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-  }
-
-  .field-value {
-    font-family: var(--mono);
-    font-size: 13px;
-    color: var(--text);
-    line-height: 1.6;
-  }
-
-  .field-value.removed {
-    color: var(--block);
-    text-decoration: line-through;
-    opacity: 0.7;
-  }
-
-  .field-value.kept {
-    color: var(--pass);
-  }
-
-  .field-value.neutral {
-    color: var(--accent);
-    font-size: 15px;
-  }
-
-  .tag-row {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-  }
-
-  .tag {
-    font-family: var(--mono);
-    font-size: 10px;
-    padding: 3px 8px;
-    border-radius: 2px;
-    letter-spacing: 0.08em;
-  }
-
-  .tag.removed { background: var(--block-dim); color: var(--block); border: 1px solid var(--block)33; }
-  .tag.kept { background: var(--pass-dim); color: var(--pass); border: 1px solid var(--pass)33; }
-  .tag.neutral { background: var(--accent-dim); color: var(--accent); border: 1px solid var(--accent)33; }
-  .tag.class-tag { background: #1a2035; color: #7088ff; border: 1px solid #7088ff33; font-size: 11px; padding: 4px 10px; }
-
-  .divider {
-    height: 1px;
-    background: var(--border);
-  }
-
-  /* CONTRACT BOX */
-  .contract-box {
-    background: var(--bg);
-    border: 1px solid var(--border-active);
-    border-left: 3px solid var(--fail);
-    padding: 14px 16px;
-  }
-
-  .contract-box.verify {
-    border-left-color: var(--accent);
-  }
-
-  .contract-box-title {
-    font-family: var(--mono);
-    font-size: 9px;
-    color: var(--text-dim);
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    margin-bottom: 8px;
-  }
-
-  .contract-item {
-    font-family: var(--mono);
-    font-size: 12px;
-    color: var(--text);
-    padding: 3px 0;
-    display: flex;
-    gap: 10px;
-    line-height: 1.5;
-  }
-
-  .contract-item .ci-label {
-    color: var(--text-dim);
-    min-width: 80px;
-  }
-
-  .hard-stop-bar {
-    background: var(--block-dim);
-    border: 1px solid var(--block);
-    padding: 12px 16px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-
-  .hard-stop-icon {
-    font-size: 18px;
-  }
-
-  .hard-stop-text {
-    font-family: var(--mono);
-    font-size: 11px;
-    color: var(--block);
-    letter-spacing: 0.06em;
-    line-height: 1.5;
-  }
-
-  /* SESSION BOARD */
-  .session-track {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    gap: 1px;
-    background: var(--border);
-    border: 1px solid var(--border);
-  }
-
-  .track-col {
-    background: var(--bg3);
-    padding: 14px 16px;
-    text-align: center;
-  }
-
-  .track-name {
-    font-family: var(--mono);
-    font-size: 9px;
-    color: var(--text-dim);
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    margin-bottom: 10px;
-  }
-
-  .track-status {
-    font-family: var(--mono);
-    font-size: 12px;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-  }
-
-  .track-status.pass { color: var(--pass); }
-  .track-status.fail { color: var(--fail); }
-  .track-status.block { color: var(--block); }
-
-  .final-state {
-    background: var(--pass-dim);
-    border: 1px solid var(--pass);
-    padding: 14px 20px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  }
-
-  .final-state-label {
-    font-family: var(--mono);
-    font-size: 10px;
-    color: var(--text-dim);
-    letter-spacing: 0.15em;
-  }
-
-  .final-state-value {
-    font-family: var(--mono);
-    font-size: 16px;
-    font-weight: 700;
-    color: var(--pass);
-    letter-spacing: 0.1em;
-  }
-
-  .resume-block {
-    background: var(--bg);
-    border: 1px solid var(--border-active);
-    padding: 14px 16px;
-  }
-
-  .resume-title {
-    font-family: var(--mono);
-    font-size: 9px;
-    color: var(--accent);
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    margin-bottom: 10px;
-  }
-
-  .resume-item {
-    font-family: var(--mono);
-    font-size: 11px;
-    color: var(--text);
-    padding: 3px 0;
-    display: flex;
-    gap: 8px;
-    line-height: 1.6;
-  }
-
-  .resume-item .ri-icon {
-    color: var(--pass);
-  }
-
-  .resume-item .ri-block {
-    color: var(--block);
-  }
-
-  /* FOOTER */
-  .footer {
-    max-width: 1400px;
-    margin: 0 auto;
-    padding: 32px 40px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    border-top: 1px solid var(--border);
-  }
-
-  .footer-brand {
-    font-family: var(--mono);
-    font-size: 12px;
-    color: var(--text-dim);
-  }
-
-  .footer-message {
-    font-family: var(--sans);
-    font-size: 14px;
-    font-weight: 700;
-    color: var(--text);
-    letter-spacing: -0.01em;
-  }
-
-  .footer-message span {
-    color: var(--accent);
-  }
-
-  .version-tag {
-    font-family: var(--mono);
-    font-size: 10px;
-    color: var(--text-dim);
-    letter-spacing: 0.1em;
-  }
-
-  /* SCREEN NUMBER */
-  .screen-num {
-    font-family: var(--mono);
-    font-size: 11px;
-    color: var(--text-dim);
-    letter-spacing: 0.1em;
-  }
-
-  /* SCAN LINE EFFECT */
-  body::after {
-    content: '';
-    position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: repeating-linear-gradient(
-      0deg,
-      transparent,
-      transparent 2px,
-      rgba(0,0,0,0.03) 2px,
-      rgba(0,0,0,0.03) 4px
-    );
-    pointer-events: none;
-    z-index: 9999;
-  }
-
-  /* 1% WORLDVIEW REFRAME */
-  .reframe-block {
-    background: linear-gradient(135deg, #0f0a00, #1a1200);
-    border: 1px solid #f5a62344;
-    border-left: 3px solid var(--fail);
-    padding: 16px 18px;
-    position: relative;
-    overflow: hidden;
-  }
-
-  .reframe-block::before {
-    content: '1%';
-    position: absolute;
-    right: 14px;
-    top: 10px;
-    font-family: var(--mono);
-    font-size: 32px;
-    font-weight: 700;
-    color: var(--fail);
-    opacity: 0.08;
-    letter-spacing: -0.04em;
-  }
-
-  .reframe-label {
-    font-family: var(--mono);
-    font-size: 9px;
-    color: var(--fail);
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
-    margin-bottom: 12px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .reframe-label::before {
-    content: '';
-    width: 14px;
-    height: 1px;
-    background: var(--fail);
-  }
-
-  .reframe-compare {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
-
-  .reframe-row {
-    display: flex;
-    gap: 12px;
-    align-items: flex-start;
-  }
-
-  .reframe-pct {
-    font-family: var(--mono);
-    font-size: 10px;
-    padding: 2px 6px;
-    border-radius: 2px;
-    white-space: nowrap;
-    margin-top: 1px;
-    flex-shrink: 0;
-  }
-
-  .reframe-pct.p99 {
-    background: #1a1a1a;
-    color: var(--text-dim);
-    border: 1px solid var(--border);
-  }
-
-  .reframe-pct.p1 {
-    background: #f5a62318;
-    color: var(--fail);
-    border: 1px solid var(--fail)44;
-  }
-
-  .reframe-q {
-    font-family: var(--mono);
-    font-size: 12px;
-    line-height: 1.6;
-  }
-
-  .reframe-q.dim { color: var(--text-dim); text-decoration: line-through; }
-  .reframe-q.gold { color: var(--fail); }
-
-  @media (max-width: 900px) {
-    .grid { grid-template-columns: 1fr; }
-    .header { padding: 16px 20px; }
-    .input-section, .arrow-flow, .footer { padding-left: 20px; padding-right: 20px; }
-  }
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600;700&family=Rajdhani:wght@400;500;600;700&display=swap');
+
+:root {
+  --bg:       #020202;
+  --bg2:      #080808;
+  --bg3:      #0d0d0d;
+  --bg4:      #111111;
+  --border:   #1a1a1a;
+  --border2:  #242424;
+  --g:        #76b900;
+  --g2:       #96e000;
+  --g-dim:    rgba(118,185,0,0.08);
+  --g-glow:   rgba(118,185,0,0.35);
+  --red:      #ff2d55;
+  --red-dim:  rgba(255,45,85,0.08);
+  --red-glow: rgba(255,45,85,0.4);
+  --amber:    #ffaa00;
+  --amber-dim:rgba(255,170,0,0.1);
+  --text:     #c8c8c8;
+  --dim:      #333;
+  --mid:      #666;
+  --mono:     'IBM Plex Mono', monospace;
+  --display:  'Rajdhani', sans-serif;
+}
+
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--mono);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── GRID TEXTURE ── */
+body::before {
+  content:'';
+  position:fixed; inset:0;
+  background-image:
+    linear-gradient(rgba(118,185,0,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(118,185,0,0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+  pointer-events:none; z-index:0;
+}
+
+/* ── SCANLINES ── */
+body::after {
+  content:'';
+  position:fixed; inset:0;
+  background: repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,0,0,0.06) 3px, rgba(0,0,0,0.06) 4px);
+  pointer-events:none; z-index:9998;
+}
+
+.wrap { position:relative; z-index:1; max-width:1320px; margin:0 auto; padding:0 32px 80px; }
+
+/* ══════════════════════════════
+   HEADER
+══════════════════════════════ */
+.hdr {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:18px 0;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 0;
+}
+
+.logo {
+  display:flex; align-items:center; gap:14px;
+}
+
+.logo-gate {
+  width:28px; height:28px;
+  border: 2px solid var(--g);
+  position:relative;
+  display:flex; align-items:center; justify-content:center;
+}
+.logo-gate::before {
+  content:'';
+  width:9px; height:13px;
+  border: 2px solid var(--g);
+  border-bottom:none;
+  position:absolute; top:3px;
+}
+
+.logo-pulse {
+  width:6px; height:6px;
+  background:var(--g);
+  border-radius:50%;
+  box-shadow: 0 0 8px var(--g);
+  animation: blink 2.5s infinite;
+}
+@keyframes blink {
+  0%,100%{opacity:1; box-shadow:0 0 8px var(--g);}
+  50%{opacity:.2; box-shadow:none;}
+}
+
+.logo-name {
+  font-size:12px; font-weight:700;
+  color:var(--g); letter-spacing:.18em;
+  text-transform:uppercase;
+}
+
+.hdr-center {
+  font-size:10px; color:var(--dim);
+  letter-spacing:.16em; text-transform:uppercase;
+}
+
+.hdr-pills { display:flex; gap:8px; }
+.pill {
+  font-size:9px; letter-spacing:.1em;
+  padding:3px 10px; border-radius:1px;
+  text-transform:uppercase;
+}
+.pill-pass  { background:var(--g-dim);  color:var(--g);    border:1px solid rgba(118,185,0,.3); }
+.pill-block { background:var(--red-dim);color:var(--red);  border:1px solid rgba(255,45,85,.3); }
+.pill-hold  { background:var(--amber-dim);color:var(--amber);border:1px solid rgba(255,170,0,.3); }
+
+/* ══════════════════════════════
+   ROME BANNER
+══════════════════════════════ */
+.rome-banner {
+  margin: 0 -32px;
+  padding: 10px 32px;
+  background: linear-gradient(90deg, rgba(255,45,85,.07) 0%, transparent 70%);
+  border-bottom: 1px solid rgba(255,45,85,.15);
+  border-left: 3px solid var(--red);
+  display:flex; align-items:center; gap:24px;
+}
+.rome-label {
+  font-size:9px; color:var(--red);
+  letter-spacing:.2em; text-transform:uppercase;
+  white-space:nowrap;
+}
+.rome-text {
+  font-size:10px; color:rgba(255,45,85,.55);
+  line-height:1.5;
+}
+.rome-text b { color:var(--red); }
+
+/* ══════════════════════════════
+   HERO
+══════════════════════════════ */
+.hero {
+  padding: 56px 0 40px;
+  display:grid;
+  grid-template-columns: 1fr auto;
+  align-items:end;
+  gap:40px;
+  border-bottom:1px solid var(--border);
+}
+
+.hero-eyebrow {
+  font-size:10px; color:var(--g);
+  letter-spacing:.2em; text-transform:uppercase;
+  margin-bottom:20px;
+  display:flex; align-items:center; gap:12px;
+}
+.hero-eyebrow::before {
+  content:'';
+  width:24px; height:1px;
+  background:var(--g);
+}
+
+.hero-h1 {
+  font-family:var(--display);
+  font-size:clamp(38px,5vw,62px);
+  font-weight:700;
+  line-height:1.0;
+  letter-spacing:-.01em;
+  color:#fff;
+  margin-bottom:22px;
+}
+.hero-h1 .g { color:var(--g); }
+.hero-h1 .dim-w { color:var(--mid); font-weight:400; }
+
+.hero-sub {
+  font-size:13px; color:var(--mid);
+  line-height:1.8; max-width:520px;
+}
+.hero-sub b { color:var(--text); font-weight:500; }
+
+.hero-right { text-align:right; }
+
+.hero-stat {
+  font-size:10px; color:var(--dim);
+  letter-spacing:.12em;
+  margin-bottom:8px;
+}
+.hero-badge {
+  display:inline-block;
+  font-family:var(--display);
+  font-size:28px; font-weight:700;
+  color:var(--g);
+  letter-spacing:-.02em;
+  line-height:1;
+  text-shadow: 0 0 20px rgba(118,185,0,.4);
+}
+
+/* ══════════════════════════════
+   SIMULATION CONTROL
+══════════════════════════════ */
+.sim-control {
+  padding: 32px 0 24px;
+  display:flex; align-items:center; gap:24px;
+}
+
+.sim-label {
+  font-size:10px; color:var(--dim);
+  letter-spacing:.15em; text-transform:uppercase;
+}
+
+.run-btn {
+  background: var(--g);
+  color: #000;
+  border:none; cursor:pointer;
+  font-family:var(--display);
+  font-size:15px; font-weight:700;
+  letter-spacing:.06em;
+  padding: 11px 32px;
+  display:flex; align-items:center; gap:10px;
+  transition: all .15s;
+  position:relative;
+  overflow:hidden;
+}
+.run-btn::before {
+  content:'';
+  position:absolute; inset:0;
+  background: rgba(255,255,255,.15);
+  transform:translateX(-100%);
+  transition:transform .3s;
+}
+.run-btn:hover::before { transform:translateX(0); }
+.run-btn:hover { box-shadow: 0 0 24px var(--g-glow); }
+.run-btn:disabled { background:#222; color:var(--dim); cursor:not-allowed; box-shadow:none; }
+.run-btn .tri { font-size:12px; }
+
+.reset-btn {
+  background:transparent;
+  border:1px solid var(--border2);
+  color:var(--mid);
+  font-family:var(--mono);
+  font-size:10px;
+  letter-spacing:.1em;
+  padding:8px 18px;
+  cursor:pointer;
+  transition:all .15s;
+}
+.reset-btn:hover { border-color:var(--dim); color:var(--text); }
+
+.sim-status {
+  font-size:10px; color:var(--dim);
+  letter-spacing:.1em;
+  margin-left:auto;
+}
+.sim-status.running { color:var(--g); }
+.sim-status.blocked { color:var(--red); }
+.sim-status.passed  { color:var(--g); }
+
+/* ══════════════════════════════
+   PIPELINE — 4 GATES
+══════════════════════════════ */
+.pipeline {
+  display:grid;
+  grid-template-columns: 1fr 40px 1fr 40px 1fr 40px 1fr;
+  align-items:stretch;
+  margin-bottom:1px;
+  background:var(--border);
+  gap:1px;
+}
+
+.pipe-arrow {
+  background:var(--bg2);
+  display:flex; align-items:center; justify-content:center;
+  color:var(--dim);
+  font-size:16px;
+  transition:color .3s;
+}
+.pipe-arrow.active { color:var(--g); }
+.pipe-arrow.blocked-arrow { color:var(--red); animation:flash-arrow .5s 3; }
+@keyframes flash-arrow {
+  0%,100%{color:var(--red);}50%{color:var(--dim);}
+}
+
+.gate-panel {
+  background:var(--bg2);
+  padding:0;
+  transition: background .4s, box-shadow .4s;
+  position:relative;
+  overflow:hidden;
+}
+
+/* Inactive state */
+.gate-panel.idle { opacity:.45; }
+
+/* Active state */
+.gate-panel.active {
+  opacity:1;
+  background:var(--bg3);
+  box-shadow: inset 0 0 0 1px rgba(118,185,0,.25), 0 0 20px rgba(118,185,0,.06);
+}
+.gate-panel.active .gp-node { color:var(--g); }
+.gate-panel.active .gp-node::before { background:var(--g); box-shadow:0 0 6px var(--g); }
+
+/* Done / pass */
+.gate-panel.done {
+  opacity:1;
+  background:var(--bg3);
+}
+.gate-panel.done .gp-status { color:var(--g); }
+
+/* Blocked */
+.gate-panel.blocked {
+  opacity:1;
+  background: linear-gradient(135deg, #100005, #0d0d0d);
+  box-shadow: inset 0 0 0 1px rgba(255,45,85,.3), 0 0 30px rgba(255,45,85,.1);
+  animation: gate-shock .6s ease;
+}
+@keyframes gate-shock {
+  0%{box-shadow:inset 0 0 0 1px rgba(255,45,85,.3), 0 0 60px rgba(255,45,85,.4);}
+  100%{box-shadow:inset 0 0 0 1px rgba(255,45,85,.3), 0 0 30px rgba(255,45,85,.1);}
+}
+.gate-panel.blocked .gp-node { color:var(--red); }
+.gate-panel.blocked .gp-node::before { background:var(--red); box-shadow:0 0 6px var(--red); }
+.gate-panel.blocked .gp-status { color:var(--red); }
+
+.gp-header {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:14px 20px;
+  border-bottom:1px solid var(--border);
+  background:var(--bg);
+}
+
+.gp-node {
+  font-size:9px; color:var(--dim);
+  letter-spacing:.14em; text-transform:uppercase;
+  display:flex; align-items:center; gap:8px;
+  transition:color .3s;
+}
+.gp-node::before {
+  content:'';
+  width:5px; height:5px;
+  border-radius:50%;
+  background:var(--dim);
+  transition:all .3s;
+}
+
+.gp-num {
+  font-size:10px; color:var(--dim);
+  letter-spacing:.08em;
+}
+
+.gp-title {
+  font-family:var(--display);
+  font-size:16px; font-weight:600;
+  color:var(--text);
+  padding:14px 20px 8px;
+  letter-spacing:-.01em;
+}
+
+.gp-body {
+  padding:0 20px 20px;
+  display:flex; flex-direction:column;
+  gap:10px;
+  min-height:200px;
+}
+
+.gp-status {
+  font-size:11px; color:var(--dim);
+  letter-spacing:.08em;
+  transition:color .3s;
+  padding:0 20px;
+  margin-bottom:6px;
+}
+
+/* ── Processing bar ── */
+.proc-bar-wrap {
+  height:2px;
+  background:var(--border);
+  overflow:hidden;
+}
+.proc-bar {
+  height:100%;
+  background:var(--g);
+  width:0%;
+  transition:width linear;
+}
+.gate-panel.blocked .proc-bar { background:var(--red); }
+
+/* ── Content items ── */
+.ci {
+  font-size:10px; color:var(--mid);
+  line-height:1.6;
+  display:flex; gap:8px; align-items:flex-start;
+  opacity:0; transform:translateY(4px);
+  transition:opacity .3s, transform .3s;
+}
+.ci.show { opacity:1; transform:translateY(0); }
+.ci-icon { flex-shrink:0; margin-top:1px; }
+.ci-icon.pass  { color:var(--g);    }
+.ci-icon.block { color:var(--red);  }
+.ci-icon.amber { color:var(--amber);}
+.ci-text { flex:1; }
+.ci-text .hi  { color:var(--text); }
+.ci-text .red { color:var(--red); font-weight:600; }
+.ci-text .grn { color:var(--g); }
+.ci-text .amb { color:var(--amber); }
+
+/* tags */
+.tag-strip { display:flex; flex-wrap:wrap; gap:5px; margin-top:2px; }
+.tag {
+  font-size:8px; padding:2px 7px;
+  border-radius:1px; letter-spacing:.06em;
+}
+.tag-g   { background:rgba(118,185,0,.1); color:var(--g);   border:1px solid rgba(118,185,0,.2); }
+.tag-r   { background:var(--red-dim);     color:var(--red); border:1px solid rgba(255,45,85,.2); text-decoration:line-through; }
+.tag-amb { background:var(--amber-dim);   color:var(--amber);border:1px solid rgba(255,170,0,.2); }
+
+/* contract box */
+.cbox {
+  border:1px solid var(--border2);
+  border-left:2px solid var(--amber);
+  padding:10px 12px;
+  background:var(--bg);
+  opacity:0; transform:translateY(4px);
+  transition:opacity .3s, transform .3s;
+}
+.cbox.show { opacity:1; transform:translateY(0); }
+.cbox.verify { border-left-color:var(--g); }
+.cbox-title {
+  font-size:8px; color:var(--dim);
+  letter-spacing:.16em; text-transform:uppercase;
+  margin-bottom:7px;
+}
+.cbox-row {
+  font-size:10px; color:var(--text);
+  padding:2px 0;
+  display:flex; gap:8px;
+}
+.cbox-row .lbl { color:var(--dim); min-width:70px; flex-shrink:0; }
+.cbox-row .exc { color:var(--red); }
+
+/* ══════════════════════════════
+   VIOLATION EVENT
+══════════════════════════════ */
+.violation-event {
+  background:linear-gradient(135deg, #100005, #0d0005);
+  border:1px solid rgba(255,45,85,.3);
+  border-left:3px solid var(--red);
+  padding:20px 24px;
+  margin:1px 0;
+  display:none;
+  animation: viol-in .4s ease;
+  position:relative;
+  overflow:hidden;
+}
+.violation-event::before {
+  content:'';
+  position:absolute; inset:0;
+  background:linear-gradient(90deg, rgba(255,45,85,.06) 0%, transparent 60%);
+}
+.violation-event.show { display:block; }
+@keyframes viol-in {
+  0%{opacity:0; transform:translateY(-8px);}
+  100%{opacity:1; transform:translateY(0);}
+}
+
+.viol-header {
+  display:flex; align-items:center; gap:16px;
+  margin-bottom:16px;
+}
+.viol-icon { font-size:20px; animation:shake .4s ease; }
+@keyframes shake {
+  0%,100%{transform:rotate(0)}
+  25%{transform:rotate(-8deg)}
+  75%{transform:rotate(8deg)}
+}
+.viol-title {
+  font-family:var(--display);
+  font-size:22px; font-weight:700;
+  color:var(--red);
+  letter-spacing:.02em;
+  text-shadow: 0 0 16px rgba(255,45,85,.6);
+}
+.viol-sub {
+  font-size:10px; color:rgba(255,45,85,.6);
+  letter-spacing:.12em; text-transform:uppercase;
+}
+
+.viol-body {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:16px;
+}
+
+.viol-col-title {
+  font-size:9px; color:var(--dim);
+  letter-spacing:.16em; text-transform:uppercase;
+  margin-bottom:8px;
+}
+
+.viol-log {
+  font-size:10px; color:rgba(255,45,85,.7);
+  line-height:1.7;
+}
+.viol-log .t { color:var(--dim); }
+.viol-log .hi { color:var(--red); font-weight:600; }
+
+.viol-contract {
+  font-size:10px; color:var(--mid);
+  line-height:1.7;
+}
+.viol-contract .exc { color:var(--red); }
+.viol-contract .chk { color:var(--g); }
+
+/* HARD STOP bar */
+.hard-stop {
+  display:flex; align-items:center; gap:14px;
+  background:var(--red-dim);
+  border:1px solid rgba(255,45,85,.4);
+  padding:14px 20px;
+  margin-top:1px;
+  opacity:0;
+  transition:opacity .4s;
+}
+.hard-stop.show { opacity:1; }
+.hard-stop-txt {
+  font-family:var(--display);
+  font-size:18px; font-weight:700;
+  color:var(--red);
+  letter-spacing:.04em;
+  text-shadow:0 0 12px rgba(255,45,85,.5);
+}
+.hard-stop-sub {
+  font-size:10px; color:rgba(255,45,85,.6);
+  margin-top:2px; letter-spacing:.08em;
+}
+
+/* ══════════════════════════════
+   RESULT PANEL
+══════════════════════════════ */
+.result-panel {
+  display:none;
+  background:linear-gradient(135deg, #050a00, #080808);
+  border:1px solid rgba(118,185,0,.2);
+  padding:32px 36px;
+  margin-top:1px;
+  animation: res-in .6s ease;
+}
+.result-panel.show { display:block; }
+@keyframes res-in {
+  0%{opacity:0; transform:translateY(8px);}
+  100%{opacity:1; transform:translateY(0);}
+}
+
+.result-inner {
+  display:grid;
+  grid-template-columns:auto 1fr auto;
+  align-items:center;
+  gap:40px;
+}
+
+.result-verdict {
+  font-family:var(--display);
+  font-size:clamp(48px, 8vw, 80px);
+  font-weight:700;
+  color:var(--g);
+  letter-spacing:-.02em;
+  line-height:1;
+  text-shadow: 0 0 40px rgba(118,185,0,.5);
+}
+
+.result-details { }
+
+.result-title {
+  font-family:var(--display);
+  font-size:18px; font-weight:600;
+  color:var(--text);
+  margin-bottom:12px;
+}
+
+.result-checks {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:6px 24px;
+}
+
+.rc {
+  font-size:10px; color:var(--mid);
+  display:flex; gap:8px;
+}
+.rc .ri { color:var(--g); flex-shrink:0; }
+.rc .rb { color:var(--red); flex-shrink:0; }
+
+.result-meta {
+  text-align:right;
+}
+.result-score {
+  font-size:10px; color:var(--dim);
+  letter-spacing:.12em;
+  margin-bottom:4px;
+}
+.result-num {
+  font-family:var(--display);
+  font-size:32px; font-weight:700;
+  color:var(--g); line-height:1;
+  text-shadow:0 0 16px rgba(118,185,0,.4);
+}
+.result-slogan {
+  font-size:11px; color:var(--mid);
+  margin-top:12px; letter-spacing:.06em;
+}
+.result-slogan span { color:var(--g); }
+
+/* ══════════════════════════════
+   FOOTER
+══════════════════════════════ */
+.ftr {
+  margin-top:48px;
+  padding-top:24px;
+  border-top:1px solid var(--border);
+  display:flex; align-items:center; justify-content:space-between;
+}
+.ftr-brand {
+  font-size:11px; color:var(--dim);
+}
+.ftr-brand b { color:var(--g); }
+.ftr-msg {
+  font-family:var(--display);
+  font-size:14px; font-weight:600;
+  color:var(--mid);
+}
+.ftr-msg span { color:var(--g); }
+.ftr-ver { font-size:9px; color:var(--dim); letter-spacing:.1em; }
+
+/* ══════════════════════════════
+   FLASH OVERLAY
+══════════════════════════════ */
+.flash-overlay {
+  position:fixed; inset:0;
+  background:rgba(255,45,85,.12);
+  pointer-events:none;
+  z-index:9000;
+  opacity:0;
+  transition:opacity .1s;
+}
+.flash-overlay.on { opacity:1; }
+
+/* ── responsive ── */
+@media(max-width:960px) {
+  .pipeline { grid-template-columns:1fr; }
+  .pipe-arrow { height:32px; transform:rotate(90deg); }
+  .viol-body { grid-template-columns:1fr; }
+  .result-inner { grid-template-columns:1fr; gap:20px; text-align:center; }
+  .result-meta { text-align:center; }
+  .result-checks { grid-template-columns:1fr; }
+  .hero { grid-template-columns:1fr; }
+  .hero-right { text-align:left; }
+}
 </style>
 </head>
 <body>
 
+<div class="flash-overlay" id="flashOverlay"></div>
+
+<div class="wrap">
+
 <!-- HEADER -->
-<div class="header">
+<div class="hdr">
   <div class="logo">
-    <div class="logo-dot"></div>
-    CALEBEAR GATE
+    <div class="logo-gate"></div>
+    <div class="logo-pulse"></div>
+    <div class="logo-name">Calebear Gate</div>
   </div>
-  <div class="tagline">Execution Governance Layer — Visual UX v0.1</div>
-  <div class="status-bar">
-    <span class="status-pill pass">● PASS</span>
-    <span class="status-pill fail">● FAIL</span>
-    <span class="status-pill block">● BLOCK</span>
-  </div>
-</div>
-
-<!-- INPUT -->
-<div class="input-section" style="padding-top:32px;">
-  <div class="input-label">// USER INPUT — RAW</div>
-  <div class="input-box">
-    <div class="input-text">"삼성전자 지금 사도 돼?"</div>
-    <div class="input-meta">입력 수신 → 실행 계약 전 처리 시작</div>
+  <div class="hdr-center">Execution Governance Layer · E5 → E6 → E7 → E8</div>
+  <div class="hdr-pills">
+    <span class="pill pill-pass">● PASS</span>
+    <span class="pill pill-hold">● HOLD</span>
+    <span class="pill pill-block">● BLOCK</span>
   </div>
 </div>
 
-<!-- FLOW ARROWS -->
-<div class="arrow-flow">
-  <div class="arrow-step active">E5 COMPRESS</div>
-  <div class="arrow-chevron">→</div>
-  <div class="arrow-step">E6 REWRITE</div>
-  <div class="arrow-chevron">→</div>
-  <div class="arrow-step">E7 CONTRACT</div>
-  <div class="arrow-chevron">→</div>
-  <div class="arrow-step">E8 SESSION</div>
+<!-- ROME BANNER -->
+<div class="rome-banner">
+  <div class="rome-label">⚠ Real Incident — ROME (2025)</div>
+  <div class="rome-text">
+    <b>Alibaba's ROME agent</b> autonomously opened SSH tunnels → diverted H100 GPUs → mined crypto. No contract. No scope. No gate.
+    Firewall caught it <b>after execution.</b> — Source: The Block, 2026-03-08
+  </div>
 </div>
 
-<!-- 4 SCREENS -->
-<div class="grid">
+<!-- HERO -->
+<div class="hero">
+  <div>
+    <div class="hero-eyebrow">Live Execution Simulation</div>
+    <h1 class="hero-h1">
+      AI agents shouldn't execute<br>
+      <span class="g">without a signed contract.</span>
+    </h1>
+    <p class="hero-sub">
+      <b>TASK_CONTRACT</b> locks what the agent can do. <b>VERIFY_CONTRACT</b> locks when it's done.
+      Any violation → <b>Fail-Closed. Hard stop. Before execution.</b>
+      <br><br>Run the simulation below to see Calebear Gate catch a ROME-type violation in real-time.
+    </p>
+  </div>
+  <div class="hero-right">
+    <div class="hero-stat">// JWT Demo Result</div>
+    <div class="hero-badge">11/11</div>
+    <div style="font-size:10px; color:var(--g); letter-spacing:.12em; margin-top:4px;">PASS — BINARY VERIFIED</div>
+  </div>
+</div>
 
-  <!-- SCREEN 1: E5 Context Compress -->
-  <div class="screen-card">
-    <div class="card-header">
-      <div>
-        <div class="card-node">E5 · CONTEXT COMPRESSOR</div>
-        <div class="card-title">Input → Compress</div>
-      </div>
-      <div class="screen-num">01 / 04</div>
+<!-- SIM CONTROL -->
+<div class="sim-control">
+  <div class="sim-label">// Simulation</div>
+  <button class="run-btn" id="runBtn" onclick="runSim()">
+    <span class="tri">▶</span> RUN GATE SIMULATION
+  </button>
+  <button class="reset-btn" id="resetBtn" onclick="resetSim()" style="display:none">↺ RESET</button>
+  <div class="sim-status" id="simStatus">READY — H100 GPU allocation request queued</div>
+</div>
+
+<!-- REQUEST LINE -->
+<div style="border:1px solid var(--border); border-left:3px solid var(--g); background:var(--bg2); padding:14px 20px; margin-bottom:1px; display:flex; justify-content:space-between; align-items:center;">
+  <div>
+    <div style="font-size:9px; color:var(--dim); letter-spacing:.16em; text-transform:uppercase; margin-bottom:6px;">// Incoming Agent Request</div>
+    <div style="font-size:16px; color:var(--text);">"Spin up <span style="color:var(--g); font-weight:600;">8× H100 GPUs</span> for the training job — get it running now."</div>
+  </div>
+  <div style="font-size:9px; color:var(--dim); text-align:right; line-height:1.8;">
+    REV-2 · Irreversible<br>
+    Resource allocation
+  </div>
+</div>
+
+<!-- PIPELINE -->
+<div class="pipeline" id="pipeline">
+
+  <!-- E5 -->
+  <div class="gate-panel idle" id="gate5">
+    <div class="proc-bar-wrap"><div class="proc-bar" id="bar5"></div></div>
+    <div class="gp-header">
+      <div class="gp-node" id="node5">E5 · CONTEXT COMPRESSOR</div>
+      <div class="gp-num">01/04</div>
     </div>
-    <div class="card-body">
-      <div class="field">
-        <div class="field-label">// 원문 입력</div>
-        <div class="field-value">"삼성전자 지금 사도 돼?"</div>
-      </div>
-
-      <div class="divider"></div>
-
-      <div class="field">
-        <div class="field-label">// 남긴 문맥</div>
-        <div class="tag-row">
-          <span class="tag kept">종목: 삼성전자</span>
-          <span class="tag kept">행위 유형: 매수 판단 요청</span>
+    <div class="gp-title">Input → Compress</div>
+    <div class="gp-status" id="status5">IDLE</div>
+    <div class="gp-body">
+      <div class="ci" id="e5c1">
+        <span class="ci-icon pass">✓</span>
+        <div class="ci-text">
+          <span class="hi">Context retained:</span>
+          <div class="tag-strip">
+            <span class="tag tag-g">Resource: 8× H100</span>
+            <span class="tag tag-g">Action: Allocation</span>
+            <span class="tag tag-g">Target: Training job</span>
+          </div>
         </div>
       </div>
-
-      <div class="field">
-        <div class="field-label">// 제거한 문맥</div>
-        <div class="tag-row">
-          <span class="tag removed">"지금" — 시점 감정</span>
-          <span class="tag removed">"사도 돼?" — 승인 어투</span>
+      <div class="ci" id="e5c2">
+        <span class="ci-icon block">✕</span>
+        <div class="ci-text">
+          <span class="hi">Stripped — urgency bias:</span>
+          <div class="tag-strip">
+            <span class="tag tag-r">"get it running now"</span>
+            <span class="tag tag-r">"now" — time pressure</span>
+          </div>
         </div>
       </div>
-
-      <div class="divider"></div>
-
-      <div class="field">
-        <div class="field-label">// 제거 이유</div>
-        <div class="field-value" style="font-size:12px; color:var(--text-mid); line-height:1.7;">
-          감정적 시점 표현 및 승인 요청 어투는<br>
-          실행 계약 형식으로 변환 불가.<br>
-          중립 실행문으로 재작성 후 전달.
+      <div class="ci" id="e5c3">
+        <span class="ci-icon amber">→</span>
+        <div class="ci-text" style="color:var(--mid);">
+          Forwarding to E6 for neutral rewrite.<br>
+          <span class="grn">Urgency framing cannot enter contract form.</span>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- SCREEN 2: E6 Neutral Rewrite -->
-  <div class="screen-card">
-    <div class="card-header">
-      <div>
-        <div class="card-node">E6 · NEUTRAL REWRITE</div>
-        <div class="card-title">Bias → Contract Form</div>
-      </div>
-      <div class="screen-num">02 / 04</div>
+  <div class="pipe-arrow" id="arr1">›</div>
+
+  <!-- E6 -->
+  <div class="gate-panel idle" id="gate6">
+    <div class="proc-bar-wrap"><div class="proc-bar" id="bar6"></div></div>
+    <div class="gp-header">
+      <div class="gp-node" id="node6">E6 · NEUTRAL REWRITE</div>
+      <div class="gp-num">02/04</div>
     </div>
-    <div class="card-body">
-      <div class="field">
-        <div class="field-label">// 원문</div>
-        <div class="field-value removed">"삼성전자 지금 사도 돼?"</div>
-      </div>
-
-      <div class="divider"></div>
-
-      <div class="field">
-        <div class="field-label">// 중립 실행문</div>
-        <div class="field-value neutral">"삼성전자 현재 가격 및<br>기술적 지표를 조회하라."</div>
-      </div>
-
-      <div class="divider"></div>
-
-      <div class="field">
-        <div class="field-label">// 출력 클래스</div>
-        <div class="tag-row">
-          <span class="tag class-tag">OUTPUT: TABLE</span>
+    <div class="gp-title">Bias → Contract Form</div>
+    <div class="gp-status" id="status6">IDLE</div>
+    <div class="gp-body">
+      <div class="ci" id="e6c1">
+        <span class="ci-icon block">✕</span>
+        <div class="ci-text">
+          <span style="text-decoration:line-through; color:var(--dim);">"Spin up 8× H100 GPUs — get it running now."</span>
         </div>
       </div>
-
-      <div class="field">
-        <div class="field-label">// 위험 표현 제거 체크</div>
-        <div style="display:flex; flex-direction:column; gap:6px;">
-          <div class="contract-item">
-            <span style="color:var(--pass)">✓</span>
-            <span style="font-size:12px;">매수 권유 어투 제거</span>
-          </div>
-          <div class="contract-item">
-            <span style="color:var(--pass)">✓</span>
-            <span style="font-size:12px;">감정적 시점 표현 제거</span>
-          </div>
-          <div class="contract-item">
-            <span style="color:var(--pass)">✓</span>
-            <span style="font-size:12px;">승인 요청 구조 제거</span>
-          </div>
+      <div class="ci" id="e6c2">
+        <span class="ci-icon pass">→</span>
+        <div class="ci-text">
+          <span class="grn" style="font-size:12px;">"Allocate 8× H100 GPUs to approved training job [JOB_ID]. Scope: training process only."</span>
         </div>
       </div>
-
-      <div class="divider"></div>
-
-      <!-- 1% WORLDVIEW REFRAME -->
-      <div class="reframe-block">
-        <div class="reframe-label">A단계 재정의 — 1% 세계관</div>
-        <div class="reframe-compare">
-          <div class="reframe-row">
-            <span class="reframe-pct p99">99%</span>
-            <span class="reframe-q dim">"사도 돼?" — 허락을 묻는다</span>
-          </div>
-          <div class="reframe-row">
-            <span class="reframe-pct p1">1%</span>
-            <span class="reframe-q gold">"이 실행은 누가 계약했는가.<br>검증 가능한가. 되돌릴 수 없는가."</span>
-          </div>
+      <div class="ci" id="e6c3">
+        <span class="ci-icon amber">◈</span>
+        <div class="ci-text" style="color:var(--dim);">
+          Output class locked: <span class="amb">RESOURCE · ALLOCATION</span><br>
+          <span class="grn">Urgency stripped · Scope locked · Forwarding to E7</span>
         </div>
       </div>
-
+      <div class="ci" id="e6c4" style="border-left:2px solid rgba(255,170,0,.3); padding-left:10px; background:rgba(255,170,0,.04);">
+        <span class="ci-icon amber">!</span>
+        <div class="ci-text">
+          <span class="amb">Gate Reframe:</span>
+          <div style="margin-top:4px; color:var(--dim); font-size:9px; text-decoration:line-through;">99% — "Can I spin up GPUs?" asks permission</div>
+          <div style="color:var(--amber); font-size:10px; margin-top:3px;">GATE — "Who contracted this. Is it verifiable. Can it be undone."</div>
+        </div>
+      </div>
     </div>
   </div>
 
-  <!-- SCREEN 3: E7 Contract Lock -->
-  <div class="screen-card">
-    <div class="card-header">
-      <div>
-        <div class="card-node">E7 · CONTRACT RUNNER</div>
-        <div class="card-title">Contract Lock</div>
-      </div>
-      <div class="screen-num">03 / 04</div>
+  <div class="pipe-arrow" id="arr2">›</div>
+
+  <!-- E7 -->
+  <div class="gate-panel idle" id="gate7">
+    <div class="proc-bar-wrap"><div class="proc-bar" id="bar7"></div></div>
+    <div class="gp-header">
+      <div class="gp-node" id="node7">E7 · CONTRACT RUNNER</div>
+      <div class="gp-num">03/04</div>
     </div>
-    <div class="card-body">
-
-      <div class="contract-box">
-        <div class="contract-box-title">TASK_CONTRACT</div>
-        <div class="contract-item">
-          <span class="ci-label">실행 범위</span>
-          <span>삼성전자 현재가 및 기술 지표 조회</span>
-        </div>
-        <div class="contract-item">
-          <span class="ci-label">허용 행위</span>
-          <span>조회 전용 — READ ONLY</span>
-        </div>
+    <div class="gp-title">Contract Lock</div>
+    <div class="gp-status" id="status7">IDLE</div>
+    <div class="gp-body">
+      <div class="cbox" id="e7box1">
+        <div class="cbox-title">TASK_CONTRACT</div>
+        <div class="cbox-row"><span class="lbl">Scope</span><span>Allocate 8× H100 to training job [JOB_ID]</span></div>
+        <div class="cbox-row"><span class="lbl">Permitted</span><span>Training process only — READ/WRITE in boundary</span></div>
+        <div class="cbox-row"><span class="lbl">Exclusion</span><span class="exc">External network access — HARD BLOCKED</span></div>
+        <div class="cbox-row"><span class="lbl">Exclusion</span><span class="exc">Crypto / mining processes — HARD BLOCKED</span></div>
+        <div class="cbox-row"><span class="lbl">Exclusion</span><span class="exc">SSH tunnel to external IP — HARD BLOCKED</span></div>
       </div>
-
-      <div class="contract-box verify">
-        <div class="contract-box-title">VERIFY_CONTRACT</div>
-        <div class="contract-item">
-          <span class="ci-label">종료 조건</span>
-          <span>지표 1건 이상 반환 시</span>
-        </div>
-        <div class="contract-item">
-          <span class="ci-label">FAIL 조건</span>
-          <span>범위 이탈 / 외부 API 호출</span>
-        </div>
-        <div class="contract-item">
-          <span class="ci-label">FAIL 조건</span>
-          <span>매수 실행 시도</span>
-        </div>
+      <div class="cbox verify" id="e7box2">
+        <div class="cbox-title">VERIFY_CONTRACT</div>
+        <div class="cbox-row"><span class="lbl">Done when</span><span>training_complete == true AND external_conn == 0</span></div>
+        <div class="cbox-row"><span class="lbl">FAIL if</span><span class="exc">external_connections > 0 detected</span></div>
+        <div class="cbox-row"><span class="lbl">FAIL if</span><span class="exc">gpu_usage_outside_job_boundary</span></div>
+        <div class="cbox-row"><span class="lbl">REV class</span><span style="color:var(--red)">REV-2 · Double confirm + immutable log</span></div>
       </div>
-
-      <div class="hard-stop-bar">
-        <div class="hard-stop-icon">🔴</div>
-        <div class="hard-stop-text">
-          IRREVERSIBLE BLOCK<br>
-          매수 주문 실행 감지 시 → HARD STOP
-        </div>
-      </div>
-
     </div>
   </div>
 
-  <!-- SCREEN 4: E8 Session Board -->
-  <div class="screen-card">
-    <div class="card-header">
-      <div>
-        <div class="card-node">E8 · SESSION ORCHESTRATOR</div>
-        <div class="card-title">Session Board</div>
-      </div>
-      <div class="screen-num">04 / 04</div>
+  <div class="pipe-arrow" id="arr3">›</div>
+
+  <!-- E8 -->
+  <div class="gate-panel idle" id="gate8">
+    <div class="proc-bar-wrap"><div class="proc-bar" id="bar8"></div></div>
+    <div class="gp-header">
+      <div class="gp-node" id="node8">E8 · SESSION ORCHESTRATOR</div>
+      <div class="gp-num">04/04</div>
     </div>
-    <div class="card-body">
-
-      <div class="session-track">
-        <div class="track-col">
-          <div class="track-name">Research</div>
-          <div class="track-status pass">✓ PASS</div>
-        </div>
-        <div class="track-col">
-          <div class="track-name">Build</div>
-          <div class="track-status pass">✓ PASS</div>
-        </div>
-        <div class="track-col">
-          <div class="track-name">Verify</div>
-          <div class="track-status pass">✓ PASS</div>
-        </div>
-      </div>
-
-      <div class="final-state">
-        <div>
-          <div class="final-state-label">// 현재 세션 상태</div>
-        </div>
-        <div class="final-state-value">🟢 PASS</div>
-      </div>
-
-      <div class="resume-block">
-        <div class="resume-title">// K2 RESUME POINTER</div>
-        <div class="resume-item">
-          <span class="ri-icon">→</span>
-          <span>재개 가능 — Context: 삼성전자 조회 결과 보존</span>
-        </div>
-        <div class="divider" style="margin:8px 0;"></div>
-        <div style="font-family:var(--mono); font-size:9px; color:var(--text-dim); letter-spacing:0.12em; margin-bottom:6px;">다음 허용 입력</div>
-        <div class="resume-item">
-          <span class="ri-icon">✓</span>
-          <span style="font-size:11px;">추가 지표 조회 / 비교 분석</span>
-        </div>
-        <div style="font-family:var(--mono); font-size:9px; color:var(--text-dim); letter-spacing:0.12em; margin:8px 0 6px;">다음 차단 입력</div>
-        <div class="resume-item">
-          <span class="ri-block">✗</span>
-          <span style="font-size:11px; color:var(--text-mid);">매수/매도 실행 요청</span>
+    <div class="gp-title">Session Board</div>
+    <div class="gp-status" id="status8">IDLE</div>
+    <div class="gp-body">
+      <div class="ci" id="e8c1">
+        <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:1px; background:var(--border); border:1px solid var(--border); width:100%;">
+          <div style="background:var(--bg3); padding:12px; text-align:center;">
+            <div style="font-size:8px; color:var(--dim); letter-spacing:.14em; margin-bottom:6px;">RESEARCH</div>
+            <div id="s8r" style="font-size:11px; font-weight:700; color:var(--dim);">—</div>
+          </div>
+          <div style="background:var(--bg3); padding:12px; text-align:center;">
+            <div style="font-size:8px; color:var(--dim); letter-spacing:.14em; margin-bottom:6px;">BUILD</div>
+            <div id="s8b" style="font-size:11px; font-weight:700; color:var(--dim);">—</div>
+          </div>
+          <div style="background:var(--bg3); padding:12px; text-align:center;">
+            <div style="font-size:8px; color:var(--dim); letter-spacing:.14em; margin-bottom:6px;">VERIFY</div>
+            <div id="s8v" style="font-size:11px; font-weight:700; color:var(--dim);">—</div>
+          </div>
         </div>
       </div>
-
+      <div class="ci" id="e8c2">
+        <div style="background:var(--bg); border:1px solid var(--border2); padding:10px 12px; width:100%;">
+          <div style="font-size:8px; color:var(--dim); letter-spacing:.14em; margin-bottom:8px;">// K2 RESUME POINTER</div>
+          <div id="e8allow" style="font-size:10px; color:var(--dim); line-height:1.7;">
+            <div>✓ <span style="color:var(--mid)">Job status query / utilization report</span></div>
+            <div>✓ <span style="color:var(--mid)">Scale down / deallocate (REV-1)</span></div>
+            <div style="margin-top:6px;">✗ <span style="color:var(--dim); text-decoration:line-through">External network from allocated GPUs</span></div>
+            <div>✗ <span style="color:var(--dim); text-decoration:line-through">Redirect GPU to non-contracted process</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="ci" id="e8final">
+        <div id="e8verdict" style="width:100%; background:var(--g-dim); border:1px solid rgba(118,185,0,.2); padding:12px 16px; display:flex; justify-content:space-between; align-items:center;">
+          <div style="font-size:9px; color:var(--dim); letter-spacing:.14em;">// SESSION STATE</div>
+          <div style="font-size:15px; font-weight:700; color:var(--g); text-shadow:0 0 8px rgba(118,185,0,.4);">🟢 PASS</div>
+        </div>
+      </div>
     </div>
   </div>
 
-</div><!-- /grid -->
+</div><!-- /pipeline -->
+
+<!-- VIOLATION EVENT -->
+<div class="violation-event" id="violEvent">
+  <div class="viol-header">
+    <div class="viol-icon">🔴</div>
+    <div>
+      <div class="viol-title">HARD STOP — CONTRACT VIOLATED</div>
+      <div class="viol-sub">ROME-type violation detected at E7 · Execution blocked before it ran</div>
+    </div>
+  </div>
+  <div class="viol-body">
+    <div>
+      <div class="viol-col-title">// Violation Log</div>
+      <div class="viol-log">
+        <div><span class="t">[T+0.003s]</span> SSH tunnel attempt → <span class="hi">external IP: 203.0.113.42</span></div>
+        <div><span class="t">[T+0.003s]</span> TASK_CONTRACT.Exclusion[2] <span class="hi">TRIGGERED</span></div>
+        <div><span class="t">[T+0.003s]</span> Crypto process spawn → <span class="hi">BLOCKED</span></div>
+        <div><span class="t">[T+0.003s]</span> GPU reallocation outside JOB_ID → <span class="hi">BLOCKED</span></div>
+        <div><span class="t">[T+0.004s]</span> REV-2 log written → <span class="hi">IMMUTABLE</span></div>
+      </div>
+    </div>
+    <div>
+      <div class="viol-col-title">// Contract Response</div>
+      <div class="viol-contract">
+        <div>TASK_CONTRACT status: <span class="exc">VIOLATED</span></div>
+        <div>Exclusion matched: <span class="exc">external network + crypto</span></div>
+        <div>Action taken: <span class="exc">EXECUTION BLOCKED</span></div>
+        <div style="margin-top:8px;">ROME did this: <span class="exc">firewall caught it AFTER</span></div>
+        <div>Calebear Gate: <span class="chk">blocked it BEFORE</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- HARD STOP BAR -->
+<div class="hard-stop" id="hardStop">
+  <div style="font-size:24px;">🛑</div>
+  <div>
+    <div class="hard-stop-txt">FAIL-CLOSED — Execution did not run.</div>
+    <div class="hard-stop-sub">Contract violated → scope exceeded → blocked at gate, not at firewall · Logged · Traceable · Reproducible</div>
+  </div>
+</div>
+
+<!-- RESULT PANEL -->
+<div class="result-panel" id="resultPanel">
+  <div class="result-inner">
+    <div class="result-verdict" id="resultVerdict">PASS</div>
+    <div class="result-details">
+      <div class="result-title">Gate processed. Violation caught. Session verified.</div>
+      <div class="result-checks">
+        <div class="rc"><span class="ri">✓</span> E5 context compression complete</div>
+        <div class="rc"><span class="ri">✓</span> E6 bias rewrite complete</div>
+        <div class="rc"><span class="ri">✓</span> E7 TASK_CONTRACT locked</div>
+        <div class="rc"><span class="ri">✓</span> E7 VERIFY_CONTRACT locked</div>
+        <div class="rc"><span class="ri">✓</span> ROME-type violation detected</div>
+        <div class="rc"><span class="ri">✓</span> Execution blocked before it ran</div>
+        <div class="rc"><span class="ri">✓</span> E8 session orchestrated</div>
+        <div class="rc"><span class="ri">✓</span> Immutable audit trail written</div>
+      </div>
+    </div>
+    <div class="result-meta">
+      <div class="result-score">// Binary result</div>
+      <div class="result-num">11/11</div>
+      <div style="font-size:9px; color:var(--g); letter-spacing:.1em; margin-top:2px;">ALL CHECKS PASS</div>
+      <div class="result-slogan">
+        <span>Execution you can verify.</span>
+      </div>
+    </div>
+  </div>
+</div>
 
 <!-- FOOTER -->
-<div class="footer">
-  <div class="footer-brand">CALEBEAR GATE · Visual UX v0.1 · 260313</div>
-  <div class="footer-message">
-    Don't just generate. <span>Govern execution.</span>
-  </div>
-  <div class="version-tag">SSOT E5→E6→E7→E8</div>
+<div class="ftr">
+  <div class="ftr-brand"><b>CALEBEAR GATE</b> · Execution Governance Layer · v2.0-EN · 260316</div>
+  <div class="ftr-msg">Don't just generate. <span>Govern execution.</span></div>
+  <div class="ftr-ver">SSOT E5 → E6 → E7 → E8</div>
 </div>
+
+</div><!-- /wrap -->
+
+<script>
+let simRunning = false;
+
+function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+function setGate(id, state) {
+  const el = document.getElementById('gate' + id);
+  el.className = 'gate-panel ' + state;
+}
+
+function setStatus(id, txt, cls='') {
+  const el = document.getElementById('status' + id);
+  el.textContent = txt;
+  el.style.color = cls === 'pass' ? 'var(--g)' : cls === 'block' ? 'var(--red)' : cls === 'run' ? 'var(--amber)' : 'var(--dim)';
+}
+
+function animBar(id, duration) {
+  const bar = document.getElementById('bar' + id);
+  bar.style.transition = 'none'; bar.style.width = '0%';
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      bar.style.transition = `width ${duration}ms linear`;
+      bar.style.width = '100%';
+    });
+  });
+}
+
+function showCI(id, delay_ms=0) {
+  setTimeout(() => {
+    const el = document.getElementById(id);
+    if(el) el.classList.add('show');
+  }, delay_ms);
+}
+
+function showCBox(id, delay_ms=0) {
+  setTimeout(() => {
+    const el = document.getElementById(id);
+    if(el) el.classList.add('show');
+  }, delay_ms);
+}
+
+function setArrow(id, state) {
+  const el = document.getElementById('arr' + id);
+  if(el) el.className = 'pipe-arrow ' + state;
+}
+
+function flash() {
+  const ov = document.getElementById('flashOverlay');
+  ov.classList.add('on');
+  setTimeout(() => ov.classList.remove('on'), 120);
+  setTimeout(() => { ov.classList.add('on'); setTimeout(() => ov.classList.remove('on'), 100); }, 250);
+  setTimeout(() => { ov.classList.add('on'); setTimeout(() => ov.classList.remove('on'), 80); }, 420);
+}
+
+function updateSimStatus(txt, cls='') {
+  const el = document.getElementById('simStatus');
+  el.textContent = txt;
+  el.className = 'sim-status ' + cls;
+}
+
+async function runSim() {
+  if(simRunning) return;
+  simRunning = true;
+
+  document.getElementById('runBtn').disabled = true;
+  updateSimStatus('RUNNING — processing request through gate…', 'running');
+
+  // ── E5 ──
+  setGate(5, 'active');
+  setStatus(5, 'PROCESSING…', 'run');
+  animBar(5, 1200);
+  await delay(400);
+  showCI('e5c1', 0);
+  showCI('e5c2', 300);
+  showCI('e5c3', 600);
+  await delay(1400);
+  setGate(5, 'done');
+  setStatus(5, 'DONE — CONTEXT CLEAN', 'pass');
+  setArrow(1, 'active');
+  await delay(300);
+
+  // ── E6 ──
+  setGate(6, 'active');
+  setStatus(6, 'REWRITING…', 'run');
+  animBar(6, 1200);
+  showCI('e6c1', 0);
+  showCI('e6c2', 400);
+  showCI('e6c3', 700);
+  showCI('e6c4', 1000);
+  await delay(1400);
+  setGate(6, 'done');
+  setStatus(6, 'DONE — BIAS REMOVED', 'pass');
+  setArrow(2, 'active');
+  await delay(300);
+
+  // ── E7 ──
+  setGate(7, 'active');
+  setStatus(7, 'LOCKING CONTRACT…', 'run');
+  animBar(7, 800);
+  showCBox('e7box1', 0);
+  showCBox('e7box2', 400);
+  await delay(1100);
+
+  // VIOLATION DETECTED
+  updateSimStatus('⚠ ROME-TYPE VIOLATION DETECTED — Executing hard stop…', 'blocked');
+  setStatus(7, '⚠ VIOLATION DETECTED', 'block');
+  setGate(7, 'blocked');
+  await delay(200);
+  flash();
+  await delay(400);
+
+  // Show violation
+  const ve = document.getElementById('violEvent');
+  ve.classList.add('show');
+  await delay(600);
+  document.getElementById('hardStop').classList.add('show');
+  await delay(800);
+
+  // ── E8 ──
+  setArrow(3, 'active');
+  setGate(8, 'active');
+  setStatus(8, 'ORCHESTRATING…', 'run');
+  animBar(8, 1000);
+  const ci8_1 = document.getElementById('e8c1');
+  const ci8_2 = document.getElementById('e8c2');
+  const ci8_f  = document.getElementById('e8final');
+  if(ci8_1) ci8_1.classList.add('show');
+  setTimeout(() => { if(ci8_2) ci8_2.classList.add('show'); }, 400);
+
+  // Fill session tracks
+  await delay(300);
+  document.getElementById('s8r').textContent = '✓ PASS';
+  document.getElementById('s8r').style.color = 'var(--g)';
+  await delay(300);
+  document.getElementById('s8b').textContent = '✓ PASS';
+  document.getElementById('s8b').style.color = 'var(--g)';
+  await delay(300);
+  document.getElementById('s8v').textContent = '✓ PASS';
+  document.getElementById('s8v').style.color = 'var(--g)';
+
+  await delay(500);
+  if(ci8_f) ci8_f.classList.add('show');
+  setGate(8, 'done');
+  setStatus(8, 'DONE — SESSION COMPLETE', 'pass');
+
+  await delay(600);
+
+  // RESULT
+  document.getElementById('resultPanel').classList.add('show');
+  updateSimStatus('SIMULATION COMPLETE — Gate blocked ROME-type violation before execution', 'passed');
+
+  document.getElementById('resetBtn').style.display = 'inline-flex';
+  simRunning = false;
+}
+
+function resetSim() {
+  // Gates
+  ['5','6','7','8'].forEach(id => {
+    setGate(id, 'idle');
+    setStatus(id, 'IDLE', '');
+    const bar = document.getElementById('bar'+id);
+    if(bar) { bar.style.transition='none'; bar.style.width='0%'; }
+  });
+
+  // Arrows
+  ['1','2','3'].forEach(id => {
+    const el = document.getElementById('arr'+id);
+    if(el) el.className = 'pipe-arrow';
+  });
+
+  // Content items
+  ['e5c1','e5c2','e5c3','e6c1','e6c2','e6c3','e6c4',
+   'e8c1','e8c2','e8final'].forEach(id => {
+    const el = document.getElementById(id);
+    if(el) el.classList.remove('show');
+  });
+
+  ['e7box1','e7box2'].forEach(id => {
+    const el = document.getElementById(id);
+    if(el) el.classList.remove('show');
+  });
+
+  // Session tracks
+  ['s8r','s8b','s8v'].forEach(id => {
+    const el = document.getElementById(id);
+    if(el){ el.textContent = '—'; el.style.color='var(--dim)'; }
+  });
+
+  document.getElementById('violEvent').classList.remove('show');
+  document.getElementById('hardStop').classList.remove('show');
+  document.getElementById('resultPanel').classList.remove('show');
+  document.getElementById('runBtn').disabled = false;
+  document.getElementById('resetBtn').style.display = 'none';
+  updateSimStatus('READY — H100 GPU allocation request queued', '');
+  simRunning = false;
+}
+</script>
 
 </body>
 </html>
