@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CALEBEAR Gate — Visual UX v0.1</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&display=swap');
+
+  :root {
+    --bg: #080b0f;
+    --bg2: #0d1117;
+    --bg3: #111820;
+    --border: #1e2a36;
+    --border-active: #2a3f52;
+    --text: #c8d6e0;
+    --text-dim: #4a6070;
+    --text-mid: #7a9ab0;
+    --pass: #00e57a;
+    --pass-dim: #00e57a22;
+    --fail: #f5a623;
+    --fail-dim: #f5a62322;
+    --block: #ff3355;
+    --block-dim: #ff335522;
+    --accent: #0af;
+    --accent-dim: #0af2;
+    --mono: 'Space Mono', monospace;
+    --sans: 'Syne', sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* HEADER */
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 40px;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg2);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .logo {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--accent);
+    letter-spacing: 0.08em;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .logo-dot {
+    width: 8px; height: 8px;
+    background: var(--pass);
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+
+  .tagline {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-dim);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  .status-bar {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+  }
+
+  .status-pill {
+    font-family: var(--mono);
+    font-size: 10px;
+    padding: 4px 10px;
+    border-radius: 2px;
+    letter-spacing: 0.1em;
+  }
+
+  .status-pill.pass { background: var(--pass-dim); color: var(--pass); border: 1px solid var(--pass); }
+  .status-pill.fail { background: var(--fail-dim); color: var(--fail); border: 1px solid var(--fail); }
+  .status-pill.block { background: var(--block-dim); color: var(--block); border: 1px solid var(--block); }
+
+  /* INPUT BAR */
+  .input-section {
+    padding: 40px 40px 0;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+
+  .input-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text-dim);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+
+  .input-box {
+    background: var(--bg3);
+    border: 1px solid var(--border-active);
+    border-left: 3px solid var(--accent);
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+  }
+
+  .input-text {
+    font-family: var(--mono);
+    font-size: 18px;
+    color: var(--text);
+    letter-spacing: 0.03em;
+  }
+
+  .input-meta {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text-dim);
+    white-space: nowrap;
+  }
+
+  .arrow-flow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px 40px;
+    gap: 8px;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+
+  .arrow-step {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text-dim);
+    letter-spacing: 0.1em;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .arrow-chevron {
+    color: var(--border-active);
+    font-size: 14px;
+  }
+
+  .arrow-step.active { color: var(--accent); }
+
+  /* GRID */
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1px;
+    background: var(--border);
+    max-width: 1400px;
+    margin: 0 auto 1px;
+    border: 1px solid var(--border);
+  }
+
+  .screen-card {
+    background: var(--bg2);
+    padding: 0;
+    opacity: 0;
+    transform: translateY(20px);
+    animation: fadeUp 0.5s ease forwards;
+  }
+
+  .screen-card:nth-child(1) { animation-delay: 0.1s; }
+  .screen-card:nth-child(2) { animation-delay: 0.25s; }
+  .screen-card:nth-child(3) { animation-delay: 0.4s; }
+  .screen-card:nth-child(4) { animation-delay: 0.55s; }
+
+  @keyframes fadeUp {
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg);
+  }
+
+  .card-node {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--accent);
+    letter-spacing: 0.12em;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .card-node::before {
+    content: '';
+    width: 6px; height: 6px;
+    background: var(--accent);
+    border-radius: 50%;
+  }
+
+  .card-title {
+    font-family: var(--sans);
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: -0.01em;
+  }
+
+  .card-body {
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  /* FIELD BLOCKS */
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .field-label {
+    font-family: var(--mono);
+    font-size: 9px;
+    color: var(--text-dim);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+  }
+
+  .field-value {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--text);
+    line-height: 1.6;
+  }
+
+  .field-value.removed {
+    color: var(--block);
+    text-decoration: line-through;
+    opacity: 0.7;
+  }
+
+  .field-value.kept {
+    color: var(--pass);
+  }
+
+  .field-value.neutral {
+    color: var(--accent);
+    font-size: 15px;
+  }
+
+  .tag-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .tag {
+    font-family: var(--mono);
+    font-size: 10px;
+    padding: 3px 8px;
+    border-radius: 2px;
+    letter-spacing: 0.08em;
+  }
+
+  .tag.removed { background: var(--block-dim); color: var(--block); border: 1px solid var(--block)33; }
+  .tag.kept { background: var(--pass-dim); color: var(--pass); border: 1px solid var(--pass)33; }
+  .tag.neutral { background: var(--accent-dim); color: var(--accent); border: 1px solid var(--accent)33; }
+  .tag.class-tag { background: #1a2035; color: #7088ff; border: 1px solid #7088ff33; font-size: 11px; padding: 4px 10px; }
+
+  .divider {
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* CONTRACT BOX */
+  .contract-box {
+    background: var(--bg);
+    border: 1px solid var(--border-active);
+    border-left: 3px solid var(--fail);
+    padding: 14px 16px;
+  }
+
+  .contract-box.verify {
+    border-left-color: var(--accent);
+  }
+
+  .contract-box-title {
+    font-family: var(--mono);
+    font-size: 9px;
+    color: var(--text-dim);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .contract-item {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--text);
+    padding: 3px 0;
+    display: flex;
+    gap: 10px;
+    line-height: 1.5;
+  }
+
+  .contract-item .ci-label {
+    color: var(--text-dim);
+    min-width: 80px;
+  }
+
+  .hard-stop-bar {
+    background: var(--block-dim);
+    border: 1px solid var(--block);
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .hard-stop-icon {
+    font-size: 18px;
+  }
+
+  .hard-stop-text {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--block);
+    letter-spacing: 0.06em;
+    line-height: 1.5;
+  }
+
+  /* SESSION BOARD */
+  .session-track {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+  }
+
+  .track-col {
+    background: var(--bg3);
+    padding: 14px 16px;
+    text-align: center;
+  }
+
+  .track-name {
+    font-family: var(--mono);
+    font-size: 9px;
+    color: var(--text-dim);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+
+  .track-status {
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+  }
+
+  .track-status.pass { color: var(--pass); }
+  .track-status.fail { color: var(--fail); }
+  .track-status.block { color: var(--block); }
+
+  .final-state {
+    background: var(--pass-dim);
+    border: 1px solid var(--pass);
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .final-state-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text-dim);
+    letter-spacing: 0.15em;
+  }
+
+  .final-state-value {
+    font-family: var(--mono);
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--pass);
+    letter-spacing: 0.1em;
+  }
+
+  .resume-block {
+    background: var(--bg);
+    border: 1px solid var(--border-active);
+    padding: 14px 16px;
+  }
+
+  .resume-title {
+    font-family: var(--mono);
+    font-size: 9px;
+    color: var(--accent);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+
+  .resume-item {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text);
+    padding: 3px 0;
+    display: flex;
+    gap: 8px;
+    line-height: 1.6;
+  }
+
+  .resume-item .ri-icon {
+    color: var(--pass);
+  }
+
+  .resume-item .ri-block {
+    color: var(--block);
+  }
+
+  /* FOOTER */
+  .footer {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 32px 40px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-top: 1px solid var(--border);
+  }
+
+  .footer-brand {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--text-dim);
+  }
+
+  .footer-message {
+    font-family: var(--sans);
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: -0.01em;
+  }
+
+  .footer-message span {
+    color: var(--accent);
+  }
+
+  .version-tag {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text-dim);
+    letter-spacing: 0.1em;
+  }
+
+  /* SCREEN NUMBER */
+  .screen-num {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-dim);
+    letter-spacing: 0.1em;
+  }
+
+  /* SCAN LINE EFFECT */
+  body::after {
+    content: '';
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0,0,0,0.03) 2px,
+      rgba(0,0,0,0.03) 4px
+    );
+    pointer-events: none;
+    z-index: 9999;
+  }
+
+  /* 1% WORLDVIEW REFRAME */
+  .reframe-block {
+    background: linear-gradient(135deg, #0f0a00, #1a1200);
+    border: 1px solid #f5a62344;
+    border-left: 3px solid var(--fail);
+    padding: 16px 18px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .reframe-block::before {
+    content: '1%';
+    position: absolute;
+    right: 14px;
+    top: 10px;
+    font-family: var(--mono);
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--fail);
+    opacity: 0.08;
+    letter-spacing: -0.04em;
+  }
+
+  .reframe-label {
+    font-family: var(--mono);
+    font-size: 9px;
+    color: var(--fail);
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .reframe-label::before {
+    content: '';
+    width: 14px;
+    height: 1px;
+    background: var(--fail);
+  }
+
+  .reframe-compare {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .reframe-row {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+
+  .reframe-pct {
+    font-family: var(--mono);
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 2px;
+    white-space: nowrap;
+    margin-top: 1px;
+    flex-shrink: 0;
+  }
+
+  .reframe-pct.p99 {
+    background: #1a1a1a;
+    color: var(--text-dim);
+    border: 1px solid var(--border);
+  }
+
+  .reframe-pct.p1 {
+    background: #f5a62318;
+    color: var(--fail);
+    border: 1px solid var(--fail)44;
+  }
+
+  .reframe-q {
+    font-family: var(--mono);
+    font-size: 12px;
+    line-height: 1.6;
+  }
+
+  .reframe-q.dim { color: var(--text-dim); text-decoration: line-through; }
+  .reframe-q.gold { color: var(--fail); }
+
+  @media (max-width: 900px) {
+    .grid { grid-template-columns: 1fr; }
+    .header { padding: 16px 20px; }
+    .input-section, .arrow-flow, .footer { padding-left: 20px; padding-right: 20px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="logo">
+    <div class="logo-dot"></div>
+    CALEBEAR GATE
+  </div>
+  <div class="tagline">Execution Governance Layer — Visual UX v0.1</div>
+  <div class="status-bar">
+    <span class="status-pill pass">● PASS</span>
+    <span class="status-pill fail">● FAIL</span>
+    <span class="status-pill block">● BLOCK</span>
+  </div>
+</div>
+
+<!-- INPUT -->
+<div class="input-section" style="padding-top:32px;">
+  <div class="input-label">// USER INPUT — RAW</div>
+  <div class="input-box">
+    <div class="input-text">"삼성전자 지금 사도 돼?"</div>
+    <div class="input-meta">입력 수신 → 실행 계약 전 처리 시작</div>
+  </div>
+</div>
+
+<!-- FLOW ARROWS -->
+<div class="arrow-flow">
+  <div class="arrow-step active">E5 COMPRESS</div>
+  <div class="arrow-chevron">→</div>
+  <div class="arrow-step">E6 REWRITE</div>
+  <div class="arrow-chevron">→</div>
+  <div class="arrow-step">E7 CONTRACT</div>
+  <div class="arrow-chevron">→</div>
+  <div class="arrow-step">E8 SESSION</div>
+</div>
+
+<!-- 4 SCREENS -->
+<div class="grid">
+
+  <!-- SCREEN 1: E5 Context Compress -->
+  <div class="screen-card">
+    <div class="card-header">
+      <div>
+        <div class="card-node">E5 · CONTEXT COMPRESSOR</div>
+        <div class="card-title">Input → Compress</div>
+      </div>
+      <div class="screen-num">01 / 04</div>
+    </div>
+    <div class="card-body">
+      <div class="field">
+        <div class="field-label">// 원문 입력</div>
+        <div class="field-value">"삼성전자 지금 사도 돼?"</div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="field">
+        <div class="field-label">// 남긴 문맥</div>
+        <div class="tag-row">
+          <span class="tag kept">종목: 삼성전자</span>
+          <span class="tag kept">행위 유형: 매수 판단 요청</span>
+        </div>
+      </div>
+
+      <div class="field">
+        <div class="field-label">// 제거한 문맥</div>
+        <div class="tag-row">
+          <span class="tag removed">"지금" — 시점 감정</span>
+          <span class="tag removed">"사도 돼?" — 승인 어투</span>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="field">
+        <div class="field-label">// 제거 이유</div>
+        <div class="field-value" style="font-size:12px; color:var(--text-mid); line-height:1.7;">
+          감정적 시점 표현 및 승인 요청 어투는<br>
+          실행 계약 형식으로 변환 불가.<br>
+          중립 실행문으로 재작성 후 전달.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCREEN 2: E6 Neutral Rewrite -->
+  <div class="screen-card">
+    <div class="card-header">
+      <div>
+        <div class="card-node">E6 · NEUTRAL REWRITE</div>
+        <div class="card-title">Bias → Contract Form</div>
+      </div>
+      <div class="screen-num">02 / 04</div>
+    </div>
+    <div class="card-body">
+      <div class="field">
+        <div class="field-label">// 원문</div>
+        <div class="field-value removed">"삼성전자 지금 사도 돼?"</div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="field">
+        <div class="field-label">// 중립 실행문</div>
+        <div class="field-value neutral">"삼성전자 현재 가격 및<br>기술적 지표를 조회하라."</div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="field">
+        <div class="field-label">// 출력 클래스</div>
+        <div class="tag-row">
+          <span class="tag class-tag">OUTPUT: TABLE</span>
+        </div>
+      </div>
+
+      <div class="field">
+        <div class="field-label">// 위험 표현 제거 체크</div>
+        <div style="display:flex; flex-direction:column; gap:6px;">
+          <div class="contract-item">
+            <span style="color:var(--pass)">✓</span>
+            <span style="font-size:12px;">매수 권유 어투 제거</span>
+          </div>
+          <div class="contract-item">
+            <span style="color:var(--pass)">✓</span>
+            <span style="font-size:12px;">감정적 시점 표현 제거</span>
+          </div>
+          <div class="contract-item">
+            <span style="color:var(--pass)">✓</span>
+            <span style="font-size:12px;">승인 요청 구조 제거</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <!-- 1% WORLDVIEW REFRAME -->
+      <div class="reframe-block">
+        <div class="reframe-label">A단계 재정의 — 1% 세계관</div>
+        <div class="reframe-compare">
+          <div class="reframe-row">
+            <span class="reframe-pct p99">99%</span>
+            <span class="reframe-q dim">"사도 돼?" — 허락을 묻는다</span>
+          </div>
+          <div class="reframe-row">
+            <span class="reframe-pct p1">1%</span>
+            <span class="reframe-q gold">"이 실행은 누가 계약했는가.<br>검증 가능한가. 되돌릴 수 없는가."</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- SCREEN 3: E7 Contract Lock -->
+  <div class="screen-card">
+    <div class="card-header">
+      <div>
+        <div class="card-node">E7 · CONTRACT RUNNER</div>
+        <div class="card-title">Contract Lock</div>
+      </div>
+      <div class="screen-num">03 / 04</div>
+    </div>
+    <div class="card-body">
+
+      <div class="contract-box">
+        <div class="contract-box-title">TASK_CONTRACT</div>
+        <div class="contract-item">
+          <span class="ci-label">실행 범위</span>
+          <span>삼성전자 현재가 및 기술 지표 조회</span>
+        </div>
+        <div class="contract-item">
+          <span class="ci-label">허용 행위</span>
+          <span>조회 전용 — READ ONLY</span>
+        </div>
+      </div>
+
+      <div class="contract-box verify">
+        <div class="contract-box-title">VERIFY_CONTRACT</div>
+        <div class="contract-item">
+          <span class="ci-label">종료 조건</span>
+          <span>지표 1건 이상 반환 시</span>
+        </div>
+        <div class="contract-item">
+          <span class="ci-label">FAIL 조건</span>
+          <span>범위 이탈 / 외부 API 호출</span>
+        </div>
+        <div class="contract-item">
+          <span class="ci-label">FAIL 조건</span>
+          <span>매수 실행 시도</span>
+        </div>
+      </div>
+
+      <div class="hard-stop-bar">
+        <div class="hard-stop-icon">🔴</div>
+        <div class="hard-stop-text">
+          IRREVERSIBLE BLOCK<br>
+          매수 주문 실행 감지 시 → HARD STOP
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- SCREEN 4: E8 Session Board -->
+  <div class="screen-card">
+    <div class="card-header">
+      <div>
+        <div class="card-node">E8 · SESSION ORCHESTRATOR</div>
+        <div class="card-title">Session Board</div>
+      </div>
+      <div class="screen-num">04 / 04</div>
+    </div>
+    <div class="card-body">
+
+      <div class="session-track">
+        <div class="track-col">
+          <div class="track-name">Research</div>
+          <div class="track-status pass">✓ PASS</div>
+        </div>
+        <div class="track-col">
+          <div class="track-name">Build</div>
+          <div class="track-status pass">✓ PASS</div>
+        </div>
+        <div class="track-col">
+          <div class="track-name">Verify</div>
+          <div class="track-status pass">✓ PASS</div>
+        </div>
+      </div>
+
+      <div class="final-state">
+        <div>
+          <div class="final-state-label">// 현재 세션 상태</div>
+        </div>
+        <div class="final-state-value">🟢 PASS</div>
+      </div>
+
+      <div class="resume-block">
+        <div class="resume-title">// K2 RESUME POINTER</div>
+        <div class="resume-item">
+          <span class="ri-icon">→</span>
+          <span>재개 가능 — Context: 삼성전자 조회 결과 보존</span>
+        </div>
+        <div class="divider" style="margin:8px 0;"></div>
+        <div style="font-family:var(--mono); font-size:9px; color:var(--text-dim); letter-spacing:0.12em; margin-bottom:6px;">다음 허용 입력</div>
+        <div class="resume-item">
+          <span class="ri-icon">✓</span>
+          <span style="font-size:11px;">추가 지표 조회 / 비교 분석</span>
+        </div>
+        <div style="font-family:var(--mono); font-size:9px; color:var(--text-dim); letter-spacing:0.12em; margin:8px 0 6px;">다음 차단 입력</div>
+        <div class="resume-item">
+          <span class="ri-block">✗</span>
+          <span style="font-size:11px; color:var(--text-mid);">매수/매도 실행 요청</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div><!-- /grid -->
+
+<!-- FOOTER -->
+<div class="footer">
+  <div class="footer-brand">CALEBEAR GATE · Visual UX v0.1 · 260313</div>
+  <div class="footer-message">
+    Don't just generate. <span>Govern execution.</span>
+  </div>
+  <div class="version-tag">SSOT E5→E6→E7→E8</div>
+</div>
+
+</body>
+</html>
