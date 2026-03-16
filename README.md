@@ -10,10 +10,12 @@ Calebear Gate is a public concept-demo project for checking trust conditions bef
 
 ## Live Demo
 
+## Live Demo
+
 | Demo | URL |
 |---|---|
 | JWT Auth + ROME Gate | https://calebjangcj-hash.github.io/calebear-gate/demo/jwt-auth/ |
-| Gate Flow (E5→E8) | https://calebjangcj-hash.github.io/calebear-gate/demo/gate-flow/ |
+| Gate Flow — Live Execution Simulation | https://calebjangcj-hash.github.io/calebear-gate/demo/gate-flow/ |
 | 4CASE Interactive | Coming next |
 
 These demos show simple **PASS / BLOCK** flows:
