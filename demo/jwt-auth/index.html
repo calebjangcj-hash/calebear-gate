@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Calebear Gate Demo</title>
+<style>
+body {
+font-family: Arial;
+text-align: center;
+margin-top: 100px;
+background: #0f172a;
+color: white;
+}
+
+button {
+padding: 12px 20px;
+font-size: 16px;
+margin: 10px;
+cursor: pointer;
+border-radius: 8px;
+border: none;
+}
+
+.pass { background: #16a34a; }
+.block { background: #dc2626; }
+</style>
+</head>
+
+<body>
+
+<h1>Calebear Gate Demo</h1>
+<p>Execution Contract Layer</p>
+
+<button class="pass" onclick="pass()">PASS</button>
+<button class="block" onclick="block()">BLOCK</button>
+
+<p id="result"></p>
+
+<script>
+function pass(){
+document.getElementById("result").innerText =
+"Execution allowed — contract satisfied";
+}
+
+function block(){
+document.getElementById("result").innerText =
+"Execution blocked — contract violation";
+}
+</script>
+
+</body>
+</html>
