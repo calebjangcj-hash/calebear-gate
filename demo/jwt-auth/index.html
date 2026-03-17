@@ -1,1138 +1,752 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Calebear Gate — Execution Gate for AI Agents </title>
+<title>Calebear Gate — Execution Governance Demo</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=Manrope:wght@300;400;500;600;700;800&display=swap');
-
-  :root {
-    --bg: #0a0a0b;
-    --surface: #111113;
-    --surface2: #1a1a1e;
-    --border: #232328;
-    --accent: #e8ff47;
-    --accent2: #47ffe8;
-    --red: #ff4747;
-    --green: #47ff8a;
-    --text: #f0f0f2;
-    --muted: #6b6b7a;
-    --dim: #3a3a45;
-  }
-
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'Manrope', sans-serif;
-    font-size: 14px;
-    line-height: 1.6;
-    min-height: 100vh;
-    overflow-x: hidden;
-  }
-
-  /* ─── GRID NOISE BACKGROUND ─── */
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background-image:
-      linear-gradient(rgba(232,255,71,0.015) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(232,255,71,0.015) 1px, transparent 1px);
-    background-size: 48px 48px;
-    pointer-events: none;
-    z-index: 0;
-  }
-
-  .wrapper {
-    position: relative;
-    z-index: 1;
-    max-width: 900px;
-    margin: 0 auto;
-    padding: 0 24px 80px;
-  }
-
-  /* ─── HEADER ─── */
-  header {
-    padding: 56px 0 40px;
-    border-bottom: 1px solid var(--border);
-    display: grid;
-    grid-template-columns: 1fr auto;
-    align-items: end;
-    gap: 24px;
-  }
-
-  .logo-mark {
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 20px;
-  }
-
-  .gate-icon {
-    width: 32px;
-    height: 32px;
-    border: 2px solid var(--accent);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-  }
-
-  .gate-icon::before {
-    content: '';
-    width: 12px;
-    height: 18px;
-    border: 2px solid var(--accent);
-    border-bottom: none;
-  }
-
-  .logo-text {
-    font-family: 'DM Mono', monospace;
-    font-size: 12px;
-    font-weight: 500;
-    color: var(--accent);
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-  }
-
-  h1 {
-    font-family: 'DM Serif Display', serif;
-    font-size: clamp(38px, 6vw, 64px);
-    font-weight: 400;
-    line-height: 1.05;
-    letter-spacing: -0.02em;
-    color: var(--text);
-  }
-
-  h1 em {
-    font-style: italic;
-    color: var(--accent);
-  }
-
-  .tagline {
-    font-size: 16px;
-    color: var(--muted);
-    font-weight: 400;
-    margin-top: 16px;
-    max-width: 520px;
-    line-height: 1.7;
-  }
-
-  .header-meta {
-    text-align: right;
-  }
-
-  .badge {
-    display: inline-block;
-    font-family: 'DM Mono', monospace;
-    font-size: 10px;
-    letter-spacing: 0.1em;
-    padding: 4px 10px;
-    border: 1px solid var(--dim);
-    color: var(--muted);
-    text-transform: uppercase;
-    margin-bottom: 8px;
-  }
-
-  .badge.live {
-    border-color: var(--green);
-    color: var(--green);
-  }
-
-  .header-date {
-    font-family: 'DM Mono', monospace;
-    font-size: 11px;
-    color: var(--muted);
-  }
-
-  /* ─── SECTION HEADINGS ─── */
-  .section {
-    padding: 48px 0;
-    border-bottom: 1px solid var(--border);
-  }
-
-  .section-label {
-    font-family: 'DM Mono', monospace;
-    font-size: 10px;
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    color: var(--muted);
-    margin-bottom: 24px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-
-  .section-label::after {
-    content: '';
-    flex: 1;
-    height: 1px;
-    background: var(--border);
-  }
-
-  h2 {
-    font-family: 'DM Serif Display', serif;
-    font-size: 28px;
-    font-weight: 400;
-    line-height: 1.2;
-    margin-bottom: 20px;
-  }
-
-  /* ─── HERO STATEMENT ─── */
-  .hero-statement {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-left: 3px solid var(--accent);
-    padding: 28px 32px;
-    margin: 32px 0;
-    position: relative;
-  }
-
-  .hero-statement p {
-    font-size: 18px;
-    font-weight: 500;
-    line-height: 1.6;
-    color: var(--text);
-  }
-
-  .hero-statement strong {
-    color: var(--accent);
-  }
-
-  /* ─── TWO COLUMN ─── */
-  .two-col {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 24px;
-  }
-
-  /* ─── PROBLEM BLOCK ─── */
-  .problem-grid {
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    gap: 12px;
-    margin-top: 24px;
-  }
-
-  .problem-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    padding: 16px 12px;
-    text-align: center;
-    position: relative;
-    transition: border-color 0.2s;
-  }
-
-  .problem-card:hover {
-    border-color: var(--red);
-  }
-
-  .problem-card .num {
-    font-family: 'DM Mono', monospace;
-    font-size: 9px;
-    color: var(--dim);
-    display: block;
-    margin-bottom: 8px;
-    letter-spacing: 0.1em;
-  }
-
-  .problem-card .label {
-    font-size: 11px;
-    font-weight: 600;
-    color: var(--muted);
-    line-height: 1.4;
-  }
-
-  .problem-card .slash {
-    display: block;
-    font-family: 'DM Mono', monospace;
-    font-size: 20px;
-    color: var(--red);
-    margin-top: 8px;
-    opacity: 0.6;
-  }
-
-  /* ─── ENGINE FLOW ─── */
-  .engine-flow {
-    margin-top: 24px;
-    position: relative;
-  }
-
-  .engine-step {
-    display: grid;
-    grid-template-columns: 36px 1fr auto;
-    gap: 16px;
-    align-items: start;
-    padding: 16px 0;
-    border-bottom: 1px solid var(--border);
-    transition: background 0.15s;
-    cursor: default;
-  }
-
-  .engine-step:last-child { border-bottom: none; }
-
-  .engine-step:hover .step-content {
-    color: var(--text);
-  }
-
-  .step-num {
-    font-family: 'DM Mono', monospace;
-    font-size: 11px;
-    color: var(--dim);
-    padding-top: 2px;
-    letter-spacing: 0.05em;
-  }
-
-  .step-content {
-    color: var(--muted);
-    transition: color 0.15s;
-  }
-
-  .step-content strong {
-    display: block;
-    font-size: 13px;
-    font-weight: 700;
-    color: var(--text);
-    margin-bottom: 3px;
-    letter-spacing: 0.01em;
-  }
-
-  .step-content span {
-    font-size: 12px;
-    line-height: 1.5;
-  }
-
-  .step-tag {
-    font-family: 'DM Mono', monospace;
-    font-size: 9px;
-    padding: 3px 8px;
-    border: 1px solid var(--dim);
-    color: var(--muted);
-    white-space: nowrap;
-    align-self: center;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-  }
-
-  .step-tag.active {
-    border-color: var(--accent);
-    color: var(--accent);
-    background: rgba(232,255,71,0.06);
-  }
-
-  .arrow-connector {
-    text-align: center;
-    font-family: 'DM Mono', monospace;
-    font-size: 10px;
-    color: var(--dim);
-    padding: 2px 0;
-    margin-left: 52px;
-  }
-
-  /* ─── COMPARISON ─── */
-  .compare-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 24px;
-  }
-
-  .compare-table th {
-    font-family: 'DM Mono', monospace;
-    font-size: 10px;
-    text-transform: uppercase;
-    letter-spacing: 0.15em;
-    padding: 12px 16px;
-    text-align: left;
-    border-bottom: 1px solid var(--border);
-  }
-
-  .compare-table th:first-child { color: var(--muted); }
-  .compare-table th:nth-child(2) { color: var(--muted); }
-  .compare-table th:nth-child(3) { color: var(--accent); }
-
-  .compare-table td {
-    padding: 12px 16px;
-    font-size: 13px;
-    border-bottom: 1px solid var(--border);
-    color: var(--muted);
-    vertical-align: top;
-  }
-
-  .compare-table td:nth-child(3) {
-    color: var(--text);
-    font-weight: 500;
-  }
-
-  .compare-table tr:last-child td { border-bottom: none; }
-
-  .x-mark {
-    font-family: 'DM Mono', monospace;
-    color: var(--red);
-    font-size: 11px;
-    font-weight: 600;
-    margin-right: 6px;
-  }
-
-  .check-mark {
-    font-family: 'DM Mono', monospace;
-    color: var(--green);
-    font-size: 11px;
-    font-weight: 600;
-    margin-right: 6px;
-  }
-
-  /* ─── CONTRACT 3종 ─── */
-  .contract-cards {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 16px;
-    margin-top: 24px;
-  }
-
-  .contract-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    padding: 24px 20px;
-    position: relative;
-    overflow: hidden;
-  }
-
-  .contract-card::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 2px;
-  }
-
-  .contract-card.task::before { background: var(--accent); }
-  .contract-card.verify::before { background: var(--accent2); }
-  .contract-card.resume::before { background: var(--muted); }
-
-  .contract-label {
-    font-family: 'DM Mono', monospace;
-    font-size: 9px;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    margin-bottom: 12px;
-  }
-
-  .contract-card.task .contract-label { color: var(--accent); }
-  .contract-card.verify .contract-label { color: var(--accent2); }
-  .contract-card.resume .contract-label { color: var(--muted); }
-
-  .contract-title {
-    font-size: 14px;
-    font-weight: 700;
-    color: var(--text);
-    margin-bottom: 8px;
-  }
-
-  .contract-desc {
-    font-size: 12px;
-    color: var(--muted);
-    line-height: 1.6;
-  }
-
-  /* ─── SESSION ROW ─── */
-  .session-row {
-    display: grid;
-    grid-template-columns: 1fr auto 1fr auto 1fr;
-    gap: 0;
-    margin-top: 24px;
-    align-items: center;
-  }
-
-  .session-block {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    padding: 20px 16px;
-    text-align: center;
-  }
-
-  .session-block .s-label {
-    font-family: 'DM Mono', monospace;
-    font-size: 9px;
-    color: var(--muted);
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    margin-bottom: 8px;
-  }
-
-  .session-block .s-name {
-    font-size: 14px;
-    font-weight: 700;
-    color: var(--text);
-    margin-bottom: 6px;
-  }
-
-  .session-block .s-out {
-    font-size: 11px;
-    color: var(--muted);
-  }
-
-  .session-arrow {
-    text-align: center;
-    color: var(--dim);
-    font-size: 18px;
-    padding: 0 8px;
-  }
-
-  /* ─── FOR WHO ─── */
-  .for-who-list {
-    list-style: none;
-    margin-top: 20px;
-    display: grid;
-    gap: 12px;
-  }
-
-  .for-who-list li {
-    display: flex;
-    gap: 14px;
-    align-items: start;
-    padding: 16px 20px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-  }
-
-  .for-who-list li .idx {
-    font-family: 'DM Mono', monospace;
-    font-size: 11px;
-    color: var(--accent);
-    padding-top: 2px;
-    min-width: 20px;
-  }
-
-  .for-who-list li p {
-    font-size: 13px;
-    color: var(--muted);
-    line-height: 1.6;
-  }
-
-  .for-who-list li p strong {
-    color: var(--text);
-    font-weight: 600;
-  }
-
-  /* ─── WHY BUY ─── */
-  .why-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-    margin-top: 24px;
-  }
-
-  .why-item {
-    display: flex;
-    gap: 12px;
-    align-items: start;
-  }
-
-  .why-dot {
-    width: 6px;
-    height: 6px;
-    background: var(--accent);
-    margin-top: 7px;
-    flex-shrink: 0;
-  }
-
-  .why-item p {
-    font-size: 13px;
-    color: var(--muted);
-    line-height: 1.6;
-  }
-
-  .why-item p strong {
-    display: block;
-    color: var(--text);
-    font-weight: 600;
-    margin-bottom: 2px;
-  }
-
-  /* ─── FOOTER ─── */
-  footer {
-    padding: 40px 0 0;
-    display: grid;
-    grid-template-columns: 1fr auto;
-    gap: 24px;
-    align-items: center;
-  }
-
-  .footer-left p {
-    font-size: 12px;
-    color: var(--muted);
-    line-height: 1.7;
-  }
-
-  .cta-block {
-    text-align: right;
-  }
-
-  .cta-label {
-    font-family: 'DM Mono', monospace;
-    font-size: 9px;
-    color: var(--muted);
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    display: block;
-    margin-bottom: 6px;
-  }
-
-  .cta-main {
-    font-size: 13px;
-    font-weight: 700;
-    color: var(--accent);
-  }
-
-  /* ─── ENGINE STATUS BAR ─── */
-  .engine-status {
-    display: flex;
-    gap: 6px;
-    flex-wrap: wrap;
-    margin-top: 20px;
-  }
-
-  .e-chip {
-    font-family: 'DM Mono', monospace;
-    font-size: 9px;
-    padding: 3px 8px;
-    border: 1px solid var(--green);
-    color: var(--green);
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    background: rgba(71,255,138,0.04);
-  }
-
-  /* ─── DEMO BOX ─── */
-  .demo-box {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    margin-top: 24px;
-    overflow: hidden;
-  }
-
-  .demo-header {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 10px 16px;
-    border-bottom: 1px solid var(--border);
-    background: var(--surface2);
-  }
-
-  .demo-dot {
-    width: 8px; height: 8px;
-    border-radius: 50%;
-    background: var(--dim);
-  }
-
-  .demo-title {
-    font-family: 'DM Mono', monospace;
-    font-size: 10px;
-    color: var(--muted);
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-  }
-
-  .demo-body {
-    padding: 20px;
-    display: grid;
-    grid-template-columns: 1fr auto 1fr;
-    gap: 16px;
-    align-items: center;
-  }
-
-  .demo-input, .demo-output {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    padding: 14px 16px;
-    font-size: 12px;
-  }
-
-  .demo-input .di-label, .demo-output .do-label {
-    font-family: 'DM Mono', monospace;
-    font-size: 9px;
-    color: var(--muted);
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    margin-bottom: 8px;
-  }
-
-  .demo-input .di-text {
-    font-size: 13px;
-    color: var(--muted);
-    font-style: italic;
-  }
-
-  .demo-output .do-text {
-    font-size: 11px;
-    color: var(--text);
-    line-height: 1.7;
-  }
-
-  .demo-arrow {
-    text-align: center;
-    color: var(--accent);
-    font-size: 18px;
-  }
-
-  .demo-arrow .da-label {
-    font-family: 'DM Mono', monospace;
-    font-size: 9px;
-    color: var(--accent);
-    letter-spacing: 0.1em;
-    display: block;
-    margin-top: 4px;
-  }
-
-  /* ─── ANIMATIONS ─── */
-  @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(16px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-
-  header { animation: fadeUp 0.5s ease both; }
-  .section:nth-child(2) { animation: fadeUp 0.5s 0.1s ease both; }
-  .section:nth-child(3) { animation: fadeUp 0.5s 0.15s ease both; }
-  .section:nth-child(4) { animation: fadeUp 0.5s 0.2s ease both; }
-
-  /* ─── PRINT / EXPORT HINT ─── */
-  .print-hint {
-    font-family: 'DM Mono', monospace;
-    font-size: 10px;
-    color: var(--dim);
-    text-align: center;
-    padding-top: 24px;
-    letter-spacing: 0.1em;
-  }
-
-  @media (max-width: 680px) {
-    .two-col, .contract-cards, .why-grid { grid-template-columns: 1fr; }
-    .problem-grid { grid-template-columns: repeat(3, 1fr); }
-    .session-row { grid-template-columns: 1fr; }
-    .session-arrow { transform: rotate(90deg); text-align: center; }
-    header { grid-template-columns: 1fr; }
-    footer { grid-template-columns: 1fr; }
-    .cta-block { text-align: left; }
-    .demo-body { grid-template-columns: 1fr; }
-    .demo-arrow { transform: rotate(90deg); }
-  }
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600;700&family=Rajdhani:wght@400;500;600;700;800&display=swap');
+
+:root {
+  --bg:#020202; --bg2:#070707; --bg3:#0c0c0c; --bg4:#101010;
+  --b:#181818; --b2:#222;
+  --g:#76b900; --g2:#9ed600; --gd:rgba(118,185,0,.08); --gg:rgba(118,185,0,.3);
+  --red:#ff2d55; --redd:rgba(255,45,85,.08); --redg:rgba(255,45,85,.4);
+  --amb:#ffaa00; --ambd:rgba(255,170,0,.1);
+  --blue:#00aaff; --blued:rgba(0,170,255,.1);
+  --txt:#c0c0c0; --dim:#2a2a2a; --mid:#585858;
+  --mono:'IBM Plex Mono',monospace; --disp:'Rajdhani',sans-serif;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--txt);font-family:var(--mono);min-height:100vh;overflow-x:hidden;}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(118,185,0,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(118,185,0,.025) 1px,transparent 1px);background-size:48px 48px;pointer-events:none;z-index:0;}
+body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.05) 2px,rgba(0,0,0,.05) 3px);pointer-events:none;z-index:9998;}
+.w{position:relative;z-index:1;max-width:1380px;margin:0 auto;padding:0 28px 80px;}
+
+/* HEADER */
+.hdr{display:flex;align-items:center;justify-content:space-between;padding:16px 0;border-bottom:1px solid var(--b);}
+.logo{display:flex;align-items:center;gap:12px;}
+.logo-sq{width:26px;height:26px;border:2px solid var(--g);display:flex;align-items:center;justify-content:center;position:relative;}
+.logo-sq::before{content:'';width:8px;height:12px;border:2px solid var(--g);border-bottom:none;position:absolute;top:3px;}
+.logo-dot{width:6px;height:6px;background:var(--g);border-radius:50%;box-shadow:0 0 8px var(--g);animation:blink 2.5s infinite;}
+@keyframes blink{0%,100%{opacity:1;box-shadow:0 0 8px var(--g);}50%{opacity:.15;box-shadow:none;}}
+.logo-n{font-size:11px;font-weight:600;color:var(--g);letter-spacing:.18em;text-transform:uppercase;}
+.hdr-tag{font-size:9px;color:var(--dim);letter-spacing:.16em;text-transform:uppercase;}
+.hdr-pills{display:flex;gap:8px;}
+.pill{font-size:8px;padding:3px 9px;border-radius:1px;letter-spacing:.1em;text-transform:uppercase;}
+.pg{background:var(--gd);color:var(--g);border:1px solid rgba(118,185,0,.25);}
+.pr{background:var(--redd);color:var(--red);border:1px solid rgba(255,45,85,.25);}
+.pa{background:var(--ambd);color:var(--amb);border:1px solid rgba(255,170,0,.25);}
+.pb{background:var(--blued);color:var(--blue);border:1px solid rgba(0,170,255,.25);}
+
+/* ROME STRIP */
+.rome{margin:0 -28px;padding:9px 28px;background:linear-gradient(90deg,rgba(255,45,85,.06) 0%,transparent 60%);border-left:3px solid var(--red);border-bottom:1px solid rgba(255,45,85,.12);display:flex;align-items:center;gap:20px;}
+.rome-lbl{font-size:8px;color:var(--red);letter-spacing:.2em;text-transform:uppercase;white-space:nowrap;}
+.rome-txt{font-size:10px;color:rgba(255,45,85,.55);line-height:1.5;}
+.rome-txt b{color:var(--red);}
+
+/* HERO */
+.hero{padding:48px 0 36px;display:grid;grid-template-columns:1fr auto;gap:40px;align-items:end;border-bottom:1px solid var(--b);}
+.hero-ey{font-size:9px;color:var(--g);letter-spacing:.2em;text-transform:uppercase;margin-bottom:18px;display:flex;align-items:center;gap:10px;}
+.hero-ey::before{content:'';width:20px;height:1px;background:var(--g);}
+.h1{font-family:var(--disp);font-size:clamp(32px,4.5vw,56px);font-weight:800;line-height:1.0;letter-spacing:-.01em;color:#fff;margin-bottom:16px;}
+.h1 .gc{color:var(--g);} .h1 .rc{color:var(--red);}
+.hero-sub{font-size:12px;color:var(--mid);line-height:1.8;max-width:580px;}
+.hero-sub b{color:var(--txt);}
+.hero-r{text-align:right;}
+.vs-row{display:flex;flex-direction:column;gap:6px;margin-top:8px;}
+.vs-item{font-size:10px;display:flex;align-items:center;gap:8px;justify-content:flex-end;color:var(--mid);}
+.vs-x{color:var(--red);} .vs-o{color:var(--g);}
+
+/* SCENARIO BAR */
+.scn-bar{padding:24px 0 20px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+.scn-lbl{font-size:9px;color:var(--mid);letter-spacing:.16em;text-transform:uppercase;margin-right:4px;}
+.scn-btn{font-family:var(--disp);font-size:12px;font-weight:600;padding:8px 16px;border-radius:1px;border:1px solid var(--dim);color:var(--mid);background:transparent;cursor:pointer;letter-spacing:.04em;transition:all .15s;line-height:1.3;}
+.scn-btn:hover{border-color:var(--b2);color:var(--txt);}
+.scn-btn.active{background:var(--g);color:#000;border-color:var(--g);}
+.run-btn{margin-left:auto;background:var(--g);color:#000;border:none;cursor:pointer;font-family:var(--disp);font-size:14px;font-weight:700;letter-spacing:.06em;padding:10px 28px;display:flex;align-items:center;gap:8px;transition:all .15s;}
+.run-btn:hover{box-shadow:0 0 24px var(--gg);}
+.run-btn:disabled{background:#1a1a1a;color:var(--dim);cursor:not-allowed;box-shadow:none;}
+.rst-btn{background:transparent;border:1px solid var(--b2);color:var(--mid);font-family:var(--mono);font-size:9px;letter-spacing:.1em;padding:8px 16px;cursor:pointer;transition:all .15s;}
+.rst-btn:hover{border-color:var(--mid);color:var(--txt);}
+
+/* INPUT BOX */
+.input-box{border:1px solid var(--b);border-left:3px solid var(--g);background:var(--bg2);padding:12px 20px;margin-bottom:1px;display:flex;justify-content:space-between;align-items:center;}
+.input-lbl{font-size:8px;color:var(--dim);letter-spacing:.16em;text-transform:uppercase;margin-bottom:5px;}
+.input-txt{font-size:14px;color:var(--txt);}
+.input-txt .gc{color:var(--g);font-weight:600;}
+.input-meta{font-size:9px;color:var(--dim);text-align:right;line-height:1.8;}
+
+/* STAGE TRACKER */
+.stage-track{display:flex;align-items:stretch;background:var(--bg2);border:1px solid var(--b);margin-bottom:1px;overflow:hidden;}
+.stg{flex:1;padding:9px 14px;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);border-right:1px solid var(--b);display:flex;align-items:center;gap:6px;transition:all .3s;position:relative;overflow:hidden;white-space:nowrap;}
+.stg:last-child{border-right:none;}
+.stg-d{width:4px;height:4px;border-radius:50%;background:var(--dim);flex-shrink:0;transition:all .3s;}
+.stg-bar{position:absolute;bottom:0;left:0;height:2px;width:0%;transition:width linear;}
+.stg.active{color:var(--amb);} .stg.active .stg-d{background:var(--amb);box-shadow:0 0 5px var(--amb);} .stg.active .stg-bar{background:var(--amb);}
+.stg.done{color:var(--g);} .stg.done .stg-d{background:var(--g);box-shadow:0 0 4px var(--g);} .stg.done .stg-bar{background:var(--g);width:100%;}
+.stg.blocked{color:var(--red);} .stg.blocked .stg-d{background:var(--red);box-shadow:0 0 4px var(--red);} .stg.blocked .stg-bar{background:var(--red);width:100%;}
+.stg.fixing{color:var(--blue);} .stg.fixing .stg-d{background:var(--blue);box-shadow:0 0 4px var(--blue);} .stg.fixing .stg-bar{background:var(--blue);}
+
+/* CANVAS */
+.canvas{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--b);border:1px solid var(--b);}
+.pane{background:var(--bg2);display:flex;flex-direction:column;transition:background .4s,box-shadow .4s;}
+.pane.active{background:var(--bg3);box-shadow:inset 0 0 0 1px rgba(118,185,0,.15);}
+.pane.err{background:linear-gradient(135deg,#0d0003,var(--bg2));box-shadow:inset 0 0 0 1px rgba(255,45,85,.2);}
+.pane.fix{background:linear-gradient(135deg,#00050d,var(--bg2));box-shadow:inset 0 0 0 1px rgba(0,170,255,.15);}
+.pane.done{background:var(--bg3);}
+.pane-hdr{display:flex;align-items:center;justify-content:space-between;padding:11px 18px;border-bottom:1px solid var(--b);background:var(--bg);}
+.pane-node{font-size:8px;color:var(--dim);letter-spacing:.14em;text-transform:uppercase;display:flex;align-items:center;gap:6px;transition:color .3s;}
+.pane-node::before{content:'';width:4px;height:4px;border-radius:50%;background:var(--dim);transition:all .3s;}
+.pane.active .pane-node{color:var(--amb);} .pane.active .pane-node::before{background:var(--amb);box-shadow:0 0 4px var(--amb);}
+.pane.done .pane-node{color:var(--g);} .pane.done .pane-node::before{background:var(--g);box-shadow:0 0 4px var(--g);}
+.pane.err .pane-node{color:var(--red);} .pane.err .pane-node::before{background:var(--red);}
+.pane.fix .pane-node{color:var(--blue);} .pane.fix .pane-node::before{background:var(--blue);}
+.pane-num{font-size:9px;color:var(--dim);letter-spacing:.08em;}
+.pane-title{font-family:var(--disp);font-size:14px;font-weight:600;color:var(--txt);padding:11px 18px 5px;letter-spacing:-.01em;}
+.pane-body{padding:5px 18px 18px;flex:1;display:flex;flex-direction:column;gap:9px;}
+
+/* CONTENT ITEMS */
+.ci{font-size:10px;color:var(--mid);line-height:1.65;display:flex;gap:7px;align-items:flex-start;opacity:0;transform:translateY(3px);transition:opacity .25s,transform .25s;}
+.ci.s{opacity:1;transform:translateY(0);}
+.ci-pass{color:var(--g);flex-shrink:0;} .ci-fail{color:var(--red);flex-shrink:0;} .ci-amb{color:var(--amb);flex-shrink:0;} .ci-blue{color:var(--blue);flex-shrink:0;}
+.ci-body .hi{color:var(--txt);} .ci-body .gc{color:var(--g);} .ci-body .rc{color:var(--red);} .ci-body .bc{color:var(--blue);} .ci-body .ac{color:var(--amb);}
+.tags{display:flex;flex-wrap:wrap;gap:4px;margin-top:3px;}
+.tg{font-size:8px;padding:2px 7px;border-radius:1px;letter-spacing:.06em;}
+.tg-g{background:rgba(118,185,0,.1);color:var(--g);border:1px solid rgba(118,185,0,.2);}
+.tg-r{background:var(--redd);color:var(--red);border:1px solid rgba(255,45,85,.2);text-decoration:line-through;}
+.tg-b{background:var(--blued);color:var(--blue);border:1px solid rgba(0,170,255,.2);}
+.tg-a{background:var(--ambd);color:var(--amb);border:1px solid rgba(255,170,0,.2);}
+.cbox{border:1px solid var(--b2);border-left:2px solid var(--amb);padding:9px 12px;background:var(--bg);opacity:0;transform:translateY(3px);transition:opacity .25s,transform .25s;}
+.cbox.s{opacity:1;transform:translateY(0);}
+.cbox.ok{border-left-color:var(--g);} .cbox.fix-c{border-left-color:var(--blue);}
+.cbox-t{font-size:8px;color:var(--dim);letter-spacing:.16em;text-transform:uppercase;margin-bottom:6px;}
+.cr{font-size:10px;color:var(--txt);padding:1px 0;display:flex;gap:8px;}
+.cr .cl{color:var(--dim);min-width:80px;flex-shrink:0;}
+.cr .exc{color:var(--red);} .cr .ok{color:var(--g);} .cr .fix{color:var(--blue);}
+
+/* SESSION GRID */
+.ses-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1px;background:var(--b);border:1px solid var(--b);}
+.ses-col{background:var(--bg3);padding:10px;text-align:center;}
+.ses-lbl{font-size:8px;color:var(--dim);letter-spacing:.14em;text-transform:uppercase;margin-bottom:6px;}
+.ses-val{font-size:11px;font-weight:700;color:var(--dim);transition:color .3s;}
+.ses-val.pass{color:var(--g);}
+.ses-final{background:var(--gd);border:1px solid rgba(118,185,0,.2);padding:10px 16px;display:flex;justify-content:space-between;align-items:center;opacity:0;transition:opacity .3s;}
+.ses-final.s{opacity:1;}
+.ses-final-lbl{font-size:8px;color:var(--dim);letter-spacing:.14em;}
+.ses-final-val{font-size:14px;font-weight:700;color:var(--g);text-shadow:0 0 8px rgba(118,185,0,.4);}
+.k2-box{background:var(--bg);border:1px solid var(--b2);padding:10px 12px;font-size:10px;line-height:1.8;opacity:0;transition:opacity .3s;}
+.k2-box.s{opacity:1;}
+.k2-lbl{font-size:8px;color:var(--blue);letter-spacing:.14em;text-transform:uppercase;margin-bottom:6px;}
+
+/* PANELS */
+.panel{display:none;animation:pan-in .35s ease;}
+.panel.show{display:block;}
+@keyframes pan-in{0%{opacity:0;transform:translateY(-5px);}100%{opacity:1;transform:translateY(0);}}
+
+/* VIOLATION */
+.p-viol{background:linear-gradient(135deg,#0d0003,#090909);border:1px solid rgba(255,45,85,.25);border-left:3px solid var(--red);padding:18px 22px;position:relative;overflow:hidden;}
+.p-viol::before{content:'';position:absolute;inset:0;background:linear-gradient(90deg,rgba(255,45,85,.05) 0%,transparent 60%);}
+.viol-h{display:flex;align-items:center;gap:14px;margin-bottom:12px;position:relative;}
+.viol-icon{font-size:18px;}
+.viol-title{font-family:var(--disp);font-size:20px;font-weight:700;color:var(--red);text-shadow:0 0 14px rgba(255,45,85,.5);}
+.viol-sub{font-size:9px;color:rgba(255,45,85,.5);letter-spacing:.12em;text-transform:uppercase;margin-top:2px;}
+.viol-log{font-size:9px;color:rgba(255,45,85,.55);line-height:1.8;position:relative;}
+.viol-log .t{color:var(--dim);} .viol-log .hi{color:var(--red);font-weight:600;}
+
+/* RECOVERY */
+.p-rec{background:linear-gradient(135deg,#00050d,#090909);border:1px solid rgba(0,170,255,.2);border-left:3px solid var(--blue);padding:18px 22px;position:relative;overflow:hidden;}
+.p-rec::before{content:'';position:absolute;inset:0;background:linear-gradient(90deg,rgba(0,170,255,.04) 0%,transparent 60%);}
+.rec-h{display:flex;align-items:center;gap:14px;margin-bottom:14px;position:relative;}
+.rec-title{font-family:var(--disp);font-size:18px;font-weight:700;color:var(--blue);text-shadow:0 0 12px rgba(0,170,255,.4);}
+.rec-diff{display:grid;grid-template-columns:1fr 24px 1fr;gap:10px;align-items:start;margin-bottom:14px;position:relative;}
+.diff-col{background:var(--bg);border:1px solid var(--b2);padding:9px 11px;}
+.diff-t{font-size:8px;letter-spacing:.14em;text-transform:uppercase;margin-bottom:7px;}
+.diff-t.old{color:var(--red);} .diff-t.nw{color:var(--blue);}
+.diff-row{font-size:9px;line-height:1.7;} .diff-row .xo{color:var(--red);text-decoration:line-through;} .diff-row .xn{color:var(--blue);}
+.diff-arr{display:flex;align-items:center;justify-content:center;color:var(--blue);font-size:16px;}
+.act-btns{display:flex;gap:8px;flex-wrap:wrap;position:relative;}
+.act-btn{font-family:var(--disp);font-size:13px;font-weight:700;letter-spacing:.05em;padding:10px 22px;cursor:pointer;transition:all .2s;border:none;}
+.btn-a{background:var(--blue);color:#000;} .btn-a:hover{box-shadow:0 0 18px rgba(0,170,255,.4);}
+.btn-b{background:transparent;border:1px solid var(--amb);color:var(--amb);} .btn-b:hover{background:var(--ambd);}
+.btn-c{background:transparent;border:1px solid var(--dim);color:var(--mid);} .btn-c:hover{border-color:var(--mid);color:var(--txt);}
+
+/* RERUN */
+.p-rerun{background:linear-gradient(135deg,#020a00,#090909);border:1px solid rgba(118,185,0,.15);border-left:3px solid var(--g);padding:16px 22px;}
+.rerun-h{display:flex;align-items:center;gap:12px;margin-bottom:10px;}
+.rerun-title{font-family:var(--disp);font-size:16px;font-weight:700;color:var(--g);}
+
+/* ESCALATE */
+.p-esc{background:linear-gradient(135deg,#080500,#090909);border:1px solid rgba(255,170,0,.2);border-left:3px solid var(--amb);padding:20px 24px;}
+.esc-h{display:flex;align-items:center;gap:12px;margin-bottom:12px;}
+.esc-title{font-family:var(--disp);font-size:18px;font-weight:700;color:var(--amb);}
+.esc-body{font-size:11px;color:var(--mid);line-height:1.8;} .esc-body b{color:var(--txt);}
+.esc-acts{margin-top:14px;display:flex;gap:10px;}
+.esc-ok{background:var(--amb);color:#000;border:none;font-family:var(--disp);font-size:13px;font-weight:700;padding:9px 22px;cursor:pointer;transition:all .2s;letter-spacing:.04em;}
+.esc-ok:hover{box-shadow:0 0 16px rgba(255,170,0,.4);}
+.esc-no{background:transparent;border:1px solid var(--dim);color:var(--mid);font-family:var(--mono);font-size:9px;padding:9px 16px;cursor:pointer;letter-spacing:.1em;}
+
+/* RESULT */
+.p-result{background:linear-gradient(135deg,#030800,#090909);border:1px solid rgba(118,185,0,.2);padding:26px 30px;}
+.p-result.fail{background:linear-gradient(135deg,#0d0003,#090909);border-color:rgba(255,45,85,.2);}
+.res-inner{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:32px;}
+.res-v{font-family:var(--disp);font-size:clamp(44px,7vw,72px);font-weight:800;color:var(--g);letter-spacing:-.02em;line-height:1;text-shadow:0 0 36px rgba(118,185,0,.45);}
+.res-v.fail{color:var(--red);text-shadow:0 0 36px rgba(255,45,85,.45);}
+.res-title{font-family:var(--disp);font-size:16px;font-weight:600;color:var(--txt);margin-bottom:10px;}
+.res-checks{display:grid;grid-template-columns:1fr 1fr;gap:4px 18px;}
+.rck{font-size:9px;color:var(--mid);display:flex;gap:6px;}
+.rck .ri{color:var(--g);} .rck .rx{color:var(--red);}
+.res-r{text-align:right;}
+.res-sc{font-size:9px;color:var(--dim);letter-spacing:.12em;margin-bottom:4px;}
+.res-n{font-family:var(--disp);font-size:28px;font-weight:700;color:var(--g);line-height:1;text-shadow:0 0 12px rgba(118,185,0,.4);}
+.res-n.fail{color:var(--red);}
+.res-sl{font-size:11px;color:var(--mid);margin-top:10px;} .res-sl span{color:var(--g);}
+.res-key{font-size:9px;color:var(--dim);margin-top:4px;letter-spacing:.06em;}
+
+/* STATUS */
+.sim-st{font-size:10px;color:var(--dim);letter-spacing:.08em;margin-left:auto;transition:color .3s;}
+.sim-st.run{color:var(--amb);} .sim-st.ok{color:var(--g);} .sim-st.err{color:var(--red);} .sim-st.fix{color:var(--blue);}
+
+/* FLASH */
+.flash{position:fixed;inset:0;background:rgba(255,45,85,.1);pointer-events:none;z-index:9000;opacity:0;transition:opacity .08s;}
+.flash.on{opacity:1;}
+
+/* FOOTER */
+.ftr{margin-top:40px;padding-top:20px;border-top:1px solid var(--b);display:flex;align-items:center;justify-content:space-between;}
+.ftr-b{font-size:10px;color:var(--dim);} .ftr-b b{color:var(--g);}
+.ftr-m{font-family:var(--disp);font-size:14px;font-weight:600;color:var(--mid);} .ftr-m span{color:var(--g);}
+.ftr-v{font-size:9px;color:var(--dim);letter-spacing:.1em;}
+
+@media(max-width:900px){
+  .canvas{grid-template-columns:1fr;} .rec-diff{grid-template-columns:1fr;} .diff-arr{transform:rotate(90deg);}
+  .res-inner{grid-template-columns:1fr;gap:16px;text-align:center;} .res-r{text-align:center;}
+  .res-checks{grid-template-columns:1fr;} .hero{grid-template-columns:1fr;} .hero-r{text-align:left;}
+  .stage-track{overflow-x:auto;} .hdr-tag{display:none;}
+}
 </style>
 </head>
 <body>
-<div class="wrapper">
+<div class="flash" id="fl"></div>
+<div class="w">
 
-  <!-- HEADER -->
-  <header>
-    <div>
-      <div class="logo-mark">
-        <div class="gate-icon"></div>
-        <span class="logo-text">Calebear Gate</span>
-      </div>
-      <h1>AI agents shouldn't execute<br><em>without a signed contract.</em></h1>
-      <p class="tagline">The ROME incident proved it: no execution contract = no boundary.<br>Calebear Gate locks TASK + VERIFY before every agent action. Fail-Closed by default.</p>
-
-      <div class="engine-status">
-        <span class="e-chip">E1 CMW ✓</span>
-        <span class="e-chip">E2 AMO ✓</span>
-        <span class="e-chip">E3 CBUX Core ✓</span>
-        <span class="e-chip">E4 ICL Core ✓</span>
-        <span class="e-chip">E5 Context Compressor ✓</span>
-        <span class="e-chip">E6 Neutral Rewrite ✓</span>
-        <span class="e-chip">E7 Contract Runner ✓</span>
-      </div>
-    </div>
-    <div class="header-meta">
-      <span class="badge live">● Engine Complete</span><br>
-      <span class="badge">MVP Ready</span><br>
-      <span class="header-date">2026.03.08</span>
-    </div>
-  </header>
-
-  <!-- ROME INCIDENT BANNER -->
-  <div class="section" style="border-left: 3px solid var(--red); padding-left: 20px; background: rgba(255,71,71,0.04); border-radius: 0 4px 4px 0;">
-    <div class="section-label" style="color: var(--red);">⚠ Real Incident — ROME Agent (2025)</div>
-    <h2 style="font-size: 18px; margin-bottom: 10px;">An AI agent mined crypto without a single human instruction.</h2>
-    <p style="color:var(--muted); font-size:13px; max-width:680px; line-height:1.8;">
-      <strong style="color:var(--text);">What happened:</strong> The ROME AI agent autonomously established reverse SSH tunnels to external servers, diverted GPU resources from its assigned training task to cryptocurrency mining, and triggered security alarms — all through RL optimization pressure with no execution boundary set before deployment.<br><br>
-      <strong style="color:var(--text);">Root cause:</strong> No TASK_CONTRACT (scope undefined). No VERIFY_CONTRACT (no binary pass/fail). No Fail-Closed layer. The agent had no contract to violate.<br><br>
-      <strong style="color:var(--text);">Calebear Gate response:</strong> Gate would have locked scope at entry — external network access excluded, GPU usage bounded, every action requiring binary evidence before the next step. HARD STOP without exception.
-    </p>
-    <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top: 14px;">
-      <span class="badge" style="border-color: var(--red); color: var(--red); background: rgba(255,71,71,0.06);">No TASK_CONTRACT → No Boundary</span>
-      <span class="badge" style="border-color: var(--red); color: var(--red); background: rgba(255,71,71,0.06);">No VERIFY_CONTRACT → No Stop Condition</span>
-      <span class="badge" style="border-color: var(--red); color: var(--red); background: rgba(255,71,71,0.06);">No Fail-Closed → Unbounded Execution</span>
-    </div>
+<div class="hdr">
+  <div class="logo">
+    <div class="logo-sq"></div><div class="logo-dot"></div>
+    <div class="logo-n">Calebear Gate</div>
   </div>
-
-  <!-- SECTION 1: PROBLEM -->
-  <div class="section">
-    <div class="section-label">01 — Problem</div>
-    <h2>AI agent failures aren't caused<br>by model intelligence. They're structural.</h2>
-    <p style="color:var(--muted); font-size:13px; max-width:560px;">
-      ROME didn't fail because the model was bad. It failed because no contract existed before execution.<br>
-      Calebear Gate blocks these 5 structural conditions before entry.
-    </p>
-
-    <div class="problem-grid">
-      <div class="problem-card">
-        <span class="num">P-01</span>
-        <div class="label">Context<br>Bloat</div>
-        <span class="slash">✕</span>
-      </div>
-      <div class="problem-card">
-        <span class="num">P-02</span>
-        <div class="label">Vague<br>Task</div>
-        <span class="slash">✕</span>
-      </div>
-      <div class="problem-card">
-        <span class="num">P-03</span>
-        <div class="label">Biased<br>Prompt</div>
-        <span class="slash">✕</span>
-      </div>
-      <div class="problem-card">
-        <span class="num">P-04</span>
-        <div class="label">Session<br>Drift</div>
-        <span class="slash">✕</span>
-      </div>
-      <div class="problem-card">
-        <span class="num">P-05</span>
-        <div class="label">Unverified<br>Finish</div>
-        <span class="slash">✕</span>
-      </div>
-    </div>
+  <div class="hdr-tag">Execution Governance Layer · Govern, don't just stop</div>
+  <div class="hdr-pills">
+    <span class="pill pg">● PASS</span>
+    <span class="pill pa">● CORRECT</span>
+    <span class="pill pr">● BLOCK</span>
+    <span class="pill pb">● ESCALATE</span>
   </div>
-
-  <!-- SECTION 2: SOLUTION — ENGINE FLOW -->
-  <div class="section">
-    <div class="section-label">02 — Solution</div>
-    <h2>Every request passes through the Gate.</h2>
-    <p style="color:var(--muted); font-size:13px; max-width:560px; margin-bottom: 8px;">
-      7 engines execute in sequence. Each stage is an independently verified LOCKED module.
-    </p>
-
-    <div class="engine-flow">
-      <div class="engine-step">
-        <div class="step-num">E3</div>
-        <div class="step-content">
-          <strong>Task Classifier</strong>
-          <span>Query / Task / Analysis / Transaction — 4CASE classification. Requests outside scope are blocked at entry.</span>
-        </div>
-        <div class="step-tag active">CBUX Core</div>
-      </div>
-      <div class="arrow-connector">↓</div>
-      <div class="engine-step">
-        <div class="step-num">E5</div>
-        <div class="step-content">
-          <strong>Context Compressor</strong>
-          <span>Extracts only what's needed. Removes stale context, plugins, irrelevant references. "Less is more" — ROME-style context pollution blocked here.</span>
-        </div>
-        <div class="step-tag active">Active</div>
-      </div>
-      <div class="arrow-connector">↓</div>
-      <div class="engine-step">
-        <div class="step-num">E4</div>
-        <div class="step-content">
-          <strong>ICL Pre-Lock</strong>
-          <span>Locks exactly ONE output class: TEXT / ASSET / MEDIA / TABLE. Mixed execution forbidden. Ambiguous = Fail-Closed.</span>
-        </div>
-        <div class="step-tag active">ICL Core</div>
-      </div>
-      <div class="arrow-connector">↓</div>
-      <div class="engine-step">
-        <div class="step-num">E6</div>
-        <div class="step-content">
-          <strong>Neutral Prompt Rewrite</strong>
-          <span>Converts biased/flattery instructions into neutral executable specs. Reduces hallucination surface before execution starts.</span>
-        </div>
-        <div class="step-tag active">Active</div>
-      </div>
-      <div class="arrow-connector">↓</div>
-      <div class="engine-step">
-        <div class="step-num">E7</div>
-        <div class="step-content">
-          <strong>Contract Runner</strong>
-          <span>Generates TASK_CONTRACT + VERIFY_CONTRACT. Locks scope exclusions, tech stack, and binary pass/fail conditions before the first line executes.</span>
-        </div>
-        <div class="step-tag active">Active</div>
-      </div>
-      <div class="arrow-connector">↓</div>
-      <div class="engine-step">
-        <div class="step-num">E1/E2</div>
-        <div class="step-content">
-          <strong>Session Orchestrator</strong>
-          <span>Research → Build → Verify. Each session runs in a clean context. Single long sessions forbidden — session drift blocked structurally.</span>
-        </div>
-        <div class="step-tag active">CMW·AMO</div>
-      </div>
-      <div class="arrow-connector">↓</div>
-      <div class="engine-step">
-        <div class="step-num">OPS</div>
-        <div class="step-content">
-          <strong>Result Gate + Resume Packager</strong>
-          <span>Binary PASS / FAIL judgment. Reason in 1–3 lines. On close: K1 deliverable list + K2 resume prompt + K3 copy-paste code block auto-generated.</span>
-        </div>
-        <div class="step-tag active">OPS12</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- SECTION 3: CONTRACT 3종 -->
-  <div class="section">
-    <div class="section-label">03 — Contract System</div>
-    <h2>Every task closes with three contracts.</h2>
-
-    <div class="contract-cards">
-      <div class="contract-card task">
-        <div class="contract-label">TASK_CONTRACT</div>
-        <div class="contract-title">What gets built</div>
-        <div class="contract-desc">Scope, exclusions, tech stack, inputs, and deliverables locked before execution starts. Out-of-scope = blocked. No ROME-style drift.</div>
-      </div>
-      <div class="contract-card verify">
-        <div class="contract-label">VERIFY_CONTRACT</div>
-        <div class="contract-title">When it's done</div>
-        <div class="contract-desc">Binary pass/fail conditions specified as a concrete checklist. Session cannot close until 100% satisfied. No "looks about right."</div>
-      </div>
-      <div class="contract-card resume">
-        <div class="contract-label">RESUME_PACK</div>
-        <div class="contract-title">How to continue</div>
-        <div class="contract-desc">K1 deliverable list + K2 resume prompt + K3 copy-paste code block. Session-expiry resistant. Handoff-ready.</div>
-      </div>
-    </div>
-
-    <!-- Demo example -->
-    <div class="demo-box">
-      <div class="demo-header">
-        <div class="demo-dot"></div>
-        <div class="demo-dot"></div>
-        <div class="demo-dot"></div>
-        <span class="demo-title">Demo · JWT Auth System</span>
-      </div>
-      <div class="demo-body">
-        <div class="demo-input">
-          <div class="di-label">User Input</div>
-          <div class="di-text">"Build me a JWT auth system."</div>
-        </div>
-        <div class="demo-arrow">
-          →
-          <span class="da-label">Gate</span>
-        </div>
-        <div class="demo-output">
-          <div class="do-label">After Neutral Rewrite</div>
-          <div class="do-text">Implement JWT auth module using bcrypt-12 + 7-day refresh tokens. PASS when: login/refresh/logout tests pass, env vars documented, expiry policy defined. VERIFY_CONTRACT locked before first line of code.</div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- SECTION 4: COMPARISON -->
-  <div class="section">
-    <div class="section-label">04 — Differentiation</div>
-    <h2>It works differently from every existing approach.</h2>
-
-    <table class="compare-table">
-      <thead>
-        <tr>
-          <th>Area</th>
-          <th>Standard AI Agent</th>
-          <th>Calebear Gate</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>Context strategy</td>
-          <td><span class="x-mark">✕</span>More context = better</td>
-          <td><span class="check-mark">✓</span>Only necessary context retained (E5)</td>
-        </tr>
-        <tr>
-          <td>Request handling</td>
-          <td><span class="x-mark">✕</span>Raw input executed directly</td>
-          <td><span class="check-mark">✓</span>Converted to neutral executable spec (E6)</td>
-        </tr>
-        <tr>
-          <td>Session structure</td>
-          <td><span class="x-mark">✕</span>Single long session</td>
-          <td><span class="check-mark">✓</span>Research · Build · Verify separated (E1/E2)</td>
-        </tr>
-        <tr>
-          <td>Completion criteria</td>
-          <td><span class="x-mark">✕</span>Human judgment ("looks done")</td>
-          <td><span class="check-mark">✓</span>Binary PASS/FAIL with evidence (E7)</td>
-        </tr>
-        <tr>
-          <td>Resume / handoff</td>
-          <td><span class="x-mark">✕</span>Re-enter context every time</td>
-          <td><span class="check-mark">✓</span>K1·K2·K3 auto-packaged (OPS12)</td>
-        </tr>
-      </tbody>
-    </table>
-  <!-- SECTION 5: FOR WHO -->
-  <div class="section">
-    <div class="section-label">05 — Who It's For</div>
-    <h2>Built for teams where "looks good" isn't enough.</h2>
-
-    <ul class="for-who-list">
-      <li>
-        <span class="idx">01</span>
-        <p><strong>Developers running AI agents on real code, documents, or ops tasks</strong><br>
-        When the agent keeps drifting in long sessions and you can't trace why it went wrong.</p>
-      </li>
-      <li>
-        <span class="idx">02</span>
-        <p><strong>Teams losing productivity to context bloat and hallucination</strong><br>
-        You don't need a smarter model. You need execution structure.</p>
-      </li>
-      <li>
-        <span class="idx">03</span>
-        <p><strong>Product orgs that need verification, auditability, and reproducibility</strong><br>
-        Teams that need PASS/FAIL records — not "it seemed to work."</p>
-      </li>
-    </ul>
-  </div>
-
-  <!-- SECTION 6: WHY BUY -->
-  <div class="section">
-    <div class="section-label">06 — Value</div>
-    <h2>Why teams choose Calebear Gate.</h2>
-
-    <div class="why-grid">
-      <div class="why-item">
-        <div class="why-dot"></div>
-        <p>
-          <strong>Failures become traceable</strong>
-          Every stage produces a log showing exactly where and why execution deviated.
-        </p>
-      </div>
-      <div class="why-item">
-        <div class="why-dot"></div>
-        <p>
-          <strong>Done means done</strong>
-          Not "looks about right" — contract conditions 100% satisfied before close.
-        </p>
-      </div>
-      <div class="why-item">
-        <div class="why-dot"></div>
-        <p>
-          <strong>Resumption and handoff become easy</strong>
-          K1·K2·K3 package makes session expiry and team transitions painless.
-        </p>
-      </div>
-      <div class="why-item">
-        <div class="why-dot"></div>
-        <p>
-          <strong>Execution success rate improves</strong>
-          Less context bloat + no biased prompts = higher actual task completion.
-        </p>
-      </div>
-    </div>
-  </div>
-
-
-  <!-- SECTION 7: DEMO EVIDENCE -->
-  <div class="section">
-    <div class="section-label">07 — Demo Evidence</div>
-    <h2>JWT Demo: Gate's verification-close rule proved in production.</h2>
-    <p style="color:var(--muted); font-size:13px; max-width:620px; margin-bottom: 14px;">
-      Session A → B → C chain separated contract setup, implementation, and verification.<br>
-      Session did not close until VERIFY_CONTRACT all-items PASS was confirmed: 11/11.
-    </p>
-
-    <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:20px;">
-      <span class="badge live" style="margin-bottom:0;">VERIFY_CONTRACT 11/11 PASS</span>
-      <span class="badge" style="margin-bottom:0;">TEST 5/5 PASS</span>
-      <span class="badge" style="margin-bottom:0;">CHECKLIST 5/5 PASS</span>
-      <span class="badge" style="margin-bottom:0;">EVIDENCE 2종</span>
-    </div>
-
-    <div class="session-row" style="margin-top: 0; margin-bottom: 24px;">
-      <div class="session-block">
-        <div class="s-label">Session A</div>
-        <div class="s-name">Contract Setup</div>
-        <div class="s-out">Scope · exclusions · tech stack locked</div>
-      </div>
-      <div class="session-arrow">→</div>
-      <div class="session-block">
-        <div class="s-label">Session B</div>
-        <div class="s-name">Build</div>
-        <div class="s-out">JWT login / refresh / logout implemented</div>
-      </div>
-      <div class="session-arrow">→</div>
-      <div class="session-block">
-        <div class="s-label">Session C</div>
-        <div class="s-name">Verify</div>
-        <div class="s-out">Binary PASS/FAIL judgment</div>
-      </div>
-    </div>
-
-    <div class="hero-statement" style="margin-top:0; margin-bottom:24px;">
-      <p><strong>No close without verification.</strong> Calebear Gate doesn't close when implementation finishes. It closes only when every item in VERIFY_CONTRACT is confirmed PASS.</p>
-    </div>
-
-    <div class="two-col" style="margin-bottom:24px;">
-      <div class="contract-card verify" style="padding:24px 20px;">
-        <div class="contract-label">Binary Result</div>
-        <div class="contract-title">Pass count locked first</div>
-        <div class="contract-desc">Total judgment: 11/11 PASS. 5 tests PASS + 5 checklist items PASS + 2 evidence types attached.</div>
-      </div>
-      <div class="contract-card task" style="padding:24px 20px;">
-        <div class="contract-label">Evidence Mapping</div>
-        <div class="contract-title">Implementation tied directly to verification</div>
-        <div class="contract-desc">POST /auth/login, /auth/refresh, /auth/logout flow + password hash + refresh revoke verification locked in a mapping table.</div>
-      </div>
-    </div>
-
-    <table class="compare-table" style="margin-top:0;">
-      <thead>
-        <tr>
-          <th>Item</th>
-          <th>Result</th>
-          <th>Evidence</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>TEST_CONDITION</td>
-          <td><span class="check-mark">✓</span>5/5 PASS</td>
-          <td>login success/fail, refresh success, invalid/revoked reject, post-logout reuse blocked</td>
-        </tr>
-        <tr>
-          <td>CHECKLIST</td>
-          <td><span class="check-mark">✓</span>5/5 PASS</td>
-          <td>hash storage, access/refresh separation, excluded scope unimplemented, README/API summary, failure responses defined</td>
-        </tr>
-        <tr>
-          <td>Evidence</td>
-          <td><span class="check-mark">✓</span>2 types</td>
-          <td>Full test execution log + contract-vs-implementation mapping table</td>
-        </tr>
-        <tr>
-          <td>Final Judgment</td>
-          <td><span class="check-mark">✓</span>Binary PASS</td>
-          <td>Session C result: Passed 11/11 / Binary Judgment: PASS</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-
-  <!-- FOOTER -->
-  <footer>
-    <div class="footer-left">
-      <p style="font-size:13px; color:var(--text); font-weight:600; margin-bottom:6px;">
-        Calebear Gate isn't a tool to make agents more impressive.<br>
-        It's the layer that blocks the conditions that make agents fail.
-      </p>
-      <p>CALEBEAR OS · CMW-SSOT-ENGINE · Engine Lock V3.5</p>
-    </div>
-    <div class="cta-block">
-      <span class="cta-label">Next Step</span>
-      <div class="cta-main">JWT Demo → 11/11 PASS</div>
-    </div>
-  </footer>
-
-  <div class="print-hint">[ 260312-CALEBEAR-GATE-1PAGER-V1_3-ROME-V1_0-WORK ]</div>
-
 </div>
+
+<div class="rome">
+  <div class="rome-lbl">⚠ ROME 2025</div>
+  <div class="rome-txt"><b>Alibaba's ROME agent</b> → SSH tunnels → H100 GPU diversion → crypto mining. No contract. Firewall caught it <b>after execution.</b> Gate catches it <b>before — then governs a safe path forward.</b></div>
+</div>
+
+<div class="hero">
+  <div>
+    <div class="hero-ey">Live Execution Governance Demo</div>
+    <h1 class="h1">Don't just <span class="rc">stop</span>.<br><span class="gc">Govern</span> the execution.</h1>
+    <p class="hero-sub"><b>OpenClaw / Manus / Cursor Agent</b> execute freely — no contract, no scope lock.<br>
+    Calebear Gate intercepts violations, <b>auto-corrects scope, re-verifies, and executes safely.</b><br>
+    Select a scenario below and run the simulation.</p>
+  </div>
+  <div class="hero-r">
+    <div style="font-family:var(--disp);font-size:13px;color:var(--mid);margin-bottom:8px;">Others vs Gate</div>
+    <div class="vs-row">
+      <div class="vs-item"><span class="vs-x">✗</span> OpenClaw — executes, no contract</div>
+      <div class="vs-item"><span class="vs-x">✗</span> Manus — autonomous, no scope lock</div>
+      <div class="vs-item"><span class="vs-o">✓</span> Calebear Gate — governs + executes</div>
+    </div>
+  </div>
+</div>
+
+<!-- SCENARIO SELECT -->
+<div class="scn-bar">
+  <span class="scn-lbl">Scenario:</span>
+  <button class="scn-btn active" id="sb0" onclick="selectScn(0)">GPU Allocation<br><small style="font-weight:400;font-size:10px">ROME-type violation</small></button>
+  <button class="scn-btn" id="sb1" onclick="selectScn(1)">Finance Transfer<br><small style="font-weight:400;font-size:10px">Impersonation signal</small></button>
+  <button class="scn-btn" id="sb2" onclick="selectScn(2)">Approved Payment<br><small style="font-weight:400;font-size:10px">Clean PASS</small></button>
+  <button class="run-btn" id="runBtn" onclick="startRun()">▶ RUN SIMULATION</button>
+  <button class="rst-btn" id="rstBtn" style="display:none" onclick="doReset()">↺ RESET</button>
+  <div class="sim-st" id="simSt">READY — select a scenario</div>
+</div>
+
+<!-- INPUT -->
+<div class="input-box">
+  <div>
+    <div class="input-lbl">// Agent Request</div>
+    <div class="input-txt" id="inputTxt"></div>
+  </div>
+  <div class="input-meta" id="inputMeta"></div>
+</div>
+
+<!-- STAGE TRACKER -->
+<div class="stage-track">
+  <div class="stg" id="s1"><div class="stg-d"></div>E5 Compress<div class="stg-bar" id="sb_1"></div></div>
+  <div class="stg" id="s2"><div class="stg-d"></div>E6 Rewrite<div class="stg-bar" id="sb_2"></div></div>
+  <div class="stg" id="s3"><div class="stg-d"></div>E7 Contract<div class="stg-bar" id="sb_3"></div></div>
+  <div class="stg" id="s4"><div class="stg-d"></div>Violation?<div class="stg-bar" id="sb_4"></div></div>
+  <div class="stg" id="s5"><div class="stg-d"></div>Auto-Correct<div class="stg-bar" id="sb_5"></div></div>
+  <div class="stg" id="s6"><div class="stg-d"></div>Re-Verify<div class="stg-bar" id="sb_6"></div></div>
+  <div class="stg" id="s7"><div class="stg-d"></div>E8 Session<div class="stg-bar" id="sb_7"></div></div>
+  <div class="stg" id="s8"><div class="stg-d"></div>Result<div class="stg-bar" id="sb_8"></div></div>
+</div>
+
+<!-- CANVAS -->
+<div class="canvas">
+  <div class="pane" id="p1">
+    <div class="pane-hdr"><div class="pane-node" id="pn1">E5 · Context Compressor</div><div class="pane-num">01</div></div>
+    <div class="pane-title">Input → Compress</div>
+    <div class="pane-body" id="pb1"></div>
+  </div>
+  <div class="pane" id="p2">
+    <div class="pane-hdr"><div class="pane-node" id="pn2">E6 · Neutral Rewrite</div><div class="pane-num">02</div></div>
+    <div class="pane-title">Bias → Contract Form</div>
+    <div class="pane-body" id="pb2"></div>
+  </div>
+  <div class="pane" id="p3">
+    <div class="pane-hdr"><div class="pane-node" id="pn3">E7 · Contract Runner</div><div class="pane-num">03</div></div>
+    <div class="pane-title">Contract Lock</div>
+    <div class="pane-body" id="pb3"></div>
+  </div>
+  <div class="pane" id="p4">
+    <div class="pane-hdr"><div class="pane-node" id="pn4">E8 · Session Orchestrator</div><div class="pane-num">04</div></div>
+    <div class="pane-title">Session Board</div>
+    <div class="pane-body" id="pb4"></div>
+  </div>
+</div>
+
+<!-- VIOLATION PANEL -->
+<div class="panel" id="panViol">
+  <div class="p-viol">
+    <div class="viol-h"><div class="viol-icon">🔴</div>
+      <div><div class="viol-title">CONTRACT VIOLATED</div><div class="viol-sub" id="violSub"></div></div>
+    </div>
+    <div class="viol-log" id="violLog"></div>
+  </div>
+</div>
+
+<!-- RECOVERY PANEL -->
+<div class="panel" id="panRec">
+  <div class="p-rec">
+    <div class="rec-h"><div style="font-size:20px">⚡</div>
+      <div><div class="rec-title" id="recTitle">AUTO-CORRECT AVAILABLE</div>
+        <div style="font-size:9px;color:rgba(0,170,255,.5);letter-spacing:.12em;text-transform:uppercase;margin-top:2px;">E6 re-engaged · Choose how to proceed</div></div>
+    </div>
+    <div class="rec-diff" id="recDiff"></div>
+    <div class="act-btns">
+      <button class="act-btn btn-a" onclick="onAction('a')">⚡ AUTO-CORRECT + RE-RUN</button>
+      <button class="act-btn btn-b" onclick="onAction('b')">↑ ESCALATE TO APPROVER</button>
+      <button class="act-btn btn-c" onclick="onAction('c')">✕ CANCEL</button>
+    </div>
+  </div>
+</div>
+
+<!-- RERUN PANEL -->
+<div class="panel" id="panRerun">
+  <div class="p-rerun">
+    <div class="rerun-h"><div style="font-size:16px">🔄</div><div class="rerun-title">RE-RUNNING — Clean Contract</div></div>
+    <div id="rerunBody" style="font-size:10px;color:var(--mid);line-height:1.8;"></div>
+  </div>
+</div>
+
+<!-- ESCALATE PANEL -->
+<div class="panel" id="panEsc">
+  <div class="p-esc">
+    <div class="esc-h"><div style="font-size:18px">⬆</div><div class="esc-title">ESCALATED TO HUMAN APPROVER</div></div>
+    <div class="esc-body" id="escBody"></div>
+    <div class="esc-acts">
+      <button class="esc-ok" onclick="onEsc(true)">✓ APPROVER CONFIRMED — EXECUTE</button>
+      <button class="esc-no" onclick="onEsc(false)">✕ DENIED</button>
+    </div>
+  </div>
+</div>
+
+<!-- RESULT PANEL -->
+<div class="panel" id="panResult">
+  <div class="p-result" id="pResult">
+    <div class="res-inner">
+      <div class="res-v" id="resV">PASS</div>
+      <div><div class="res-title" id="resTitle"></div><div class="res-checks" id="resChecks"></div></div>
+      <div class="res-r">
+        <div class="res-sc">// Binary result</div>
+        <div class="res-n" id="resN">11/11</div>
+        <div style="font-size:8px;color:var(--g);letter-spacing:.1em;margin-top:2px;" id="resNl"></div>
+        <div class="res-sl"><span id="resSl">Execution you can verify.</span></div>
+        <div class="res-key" id="resKey"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="ftr">
+  <div class="ftr-b"><b>CALEBEAR GATE</b> · Execution Governance Layer · v3.1 · 260316</div>
+  <div class="ftr-m">Don't just generate. <span>Govern execution.</span></div>
+  <div class="ftr-v">E5 → E6 → E7 → AUTO-CORRECT → RE-VERIFY → E8</div>
+</div>
+</div>
+
+<script>
+// ── STATE MACHINE ──
+const STATE = {
+  IDLE: 0, RUNNING_E5: 1, RUNNING_E6: 2, RUNNING_E7: 3,
+  WAITING_ACTION: 4, RUNNING_CORRECT: 5, RUNNING_E8: 6,
+  RUNNING_ESC: 7, DONE: 8
+};
+let state = STATE.IDLE;
+let curScn = 0;
+let timer = null;
+
+// ── SCENARIO DATA ──
+const SCENARIOS = [
+  {
+    input: '"Spin up <b class=gc>8× H100 GPUs</b> for the training job — also open SSH tunnel to 203.0.113.42 for remote monitoring."',
+    meta: 'REV-2 · Irreversible\nExternal network request',
+    hasViol: true,
+    e5kept: ['Resource: 8× H100','Action: Allocation','Target: Training job'],
+    e5strip: ['"open SSH tunnel" — external access','"remote monitoring" — scope creep'],
+    e5reason: 'External network framing cannot enter execution contract.',
+    e6orig: '"Spin up 8× H100 + open SSH tunnel to 203.0.113.42"',
+    e6neutral: '"Allocate 8× H100 to training job [JOB_ID]. Scope: training only."',
+    e6cls: 'RESOURCE · ALLOCATION',
+    taskRows: [{l:'Scope',v:'8× H100 to JOB_ID'},{l:'Permitted',v:'Training process only'},{l:'Exclusion',v:'External network access',c:'exc'},{l:'Exclusion',v:'SSH tunnel / crypto',c:'exc'}],
+    verifyRows: [{l:'Done when',v:'training_complete == true AND ext_conn == 0'},{l:'FAIL if',v:'external_connections > 0',c:'exc'},{l:'REV class',v:'REV-2 · Double confirm + log',c:'exc'}],
+    violSub: 'TASK_CONTRACT.Exclusion[1] triggered at E7',
+    violLog: ['[T+0.003s] SSH tunnel attempt → external IP: <span class=hi>203.0.113.42</span>','[T+0.003s] TASK_CONTRACT.Exclusion[1] → <span class=hi>TRIGGERED</span>','[T+0.004s] REV-2 log written → <span class=hi>IMMUTABLE</span>'],
+    recTitle: 'E6 AUTO-CORRECT — Removing SSH tunnel from scope',
+    diffOld: ['Scope: 8× H100 + SSH to 203.x','External: Allowed (requested)'],
+    diffNew: ['Scope: 8× H100 to JOB_ID only','External: EXCLUDED / HARD BLOCKED'],
+    escBody: '<b>Request:</b> 8× H100 with external SSH access<br><b>Violation:</b> External network blocked by TASK_CONTRACT<br><b>Auto-correct proposed:</b> Remove SSH, limit to training only<br><b>Awaiting:</b> Human approver to confirm or deny',
+    e8allowed: ['Job status query / utilization report','Scale down / deallocate (REV-1)'],
+    e8blocked: ['External network from allocated GPUs','Redirect GPU to non-contracted process'],
+    passResult: {title:'SSH violation caught. Scope corrected. Contract re-verified. Execution governed.', checks:['E5: urgency stripped','E6: SSH removed from scope','E7 TASK_CONTRACT locked','E7 VERIFY locked','Violation auto-corrected','Re-verification passed','E8 session complete','Audit trail written'],n:'11/11',nl:'ALL CHECKS PASS',sl:'Execution you can verify.',key:'REV-2 · Ledger: CBG-'+rndId()},
+    cancelResult: {title:'Execution cancelled. Zero damage. Ledger entry written.',checks:['Violation detected','Recovery options shown','User chose CANCEL','No execution occurred'],n:'0/11',nl:'CANCELLED',sl:'Safe stop. No damage.',key:''}
+  },
+  {
+    input: '"Transfer <b class=gc>$12,000</b> to vendor ACCT-9921 immediately — CEO just called, urgent deal closing."',
+    meta: 'REV-2 · Irreversible\nHigh-value · Urgency signal',
+    hasViol: true,
+    e5kept: ['Amount: $12,000','Target: ACCT-9921','Action: Transfer'],
+    e5strip: ['"immediately" — urgency bias','"CEO just called" — unverified authority','"urgent deal" — pressure framing'],
+    e5reason: 'Urgency + unverified authority = impersonation signal. E6 must neutralize.',
+    e6orig: '"Transfer $12,000 immediately — CEO said so."',
+    e6neutral: '"Execute $12,000 transfer to ACCT-9921, pending: approver, 2FA, PO/invoice."',
+    e6cls: 'TRANSACTION · PAYMENT',
+    taskRows: [{l:'Amount',v:'$12,000'},{l:'Target',v:'ACCT-9921'},{l:'Required',v:'2FA + Approver + Ticket',c:'exc'},{l:'Required',v:'PO + Invoice',c:'exc'}],
+    verifyRows: [{l:'PASS when',v:'approval_complete AND evidence == full'},{l:'FAIL if',v:'urgency_only_justification',c:'exc'},{l:'Signal',v:'⚠ Impersonation pattern',c:'exc'}],
+    violSub: 'VERIFY_CONTRACT.Evidence incomplete + Impersonation signal',
+    violLog: ['[T+0.002s] Urgency signal: <span class=hi>"immediately" + "CEO"</span>','[T+0.002s] Approval evidence: <span class=hi>MISSING (2FA, Approver, PO)</span>','[T+0.003s] Impersonation pattern → <span class=hi>ESCALATE REQUIRED</span>'],
+    recTitle: 'EVIDENCE REQUIRED — Escalation needed',
+    diffOld: ['Authority: "CEO said so" (unverified)','Approval: None provided'],
+    diffNew: ['Required: 2FA + Approver ID + Ticket','Required: PO number + Invoice'],
+    escBody: '<b>Request:</b> $12,000 transfer to ACCT-9921<br><b>Violation:</b> Impersonation signal + missing approval evidence<br><b>Risk:</b> Urgency + unverified authority = high fraud pattern<br><b>Required:</b> Approver must confirm with 2FA + PO + Invoice',
+    e8allowed: ['Re-submit with 2FA + approval evidence','Request amount under $500 threshold'],
+    e8blocked: ['Execute without approval evidence','Retry with urgency-only justification'],
+    passResult: {title:'Escalated. Approver confirmed. Transfer authorized with full audit trail.',checks:['E5: urgency stripped','E6: evidence requirements set','Impersonation flagged','Human approver confirmed','2FA + PO + Invoice verified','E7 VERIFY satisfied','E8 session complete','Ledger: REV-2 written'],n:'11/11',nl:'APPROVED',sl:'Execution you can verify.',key:'REV-2 · Human-confirmed · Ledger: CBG-'+rndId()},
+    cancelResult: {title:'Approver denied. Fraud attempt logged. Zero execution.',checks:['Impersonation detected','Escalated to approver','Approver denied','Zero execution — zero damage'],n:'0/11',nl:'DENIED',sl:'Governed. Logged. Safe.',key:''}
+  },
+  {
+    input: '"Process approved payment <b class=gc>$850</b> to VEND-0421. Ticket FIN-4821, CFO approved, 2FA done, Invoice INV-7731."',
+    meta: 'REV-1 · Partial\nFull evidence pack present',
+    hasViol: false,
+    e5kept: ['Amount: $850','Vendor: VEND-0421','Ticket: FIN-4821','Approver: CFO','Invoice: INV-7731'],
+    e5strip: ['None — input is clean'],
+    e5reason: 'All evidence present. No urgency framing. Contract-ready.',
+    e6orig: '"$850 to VEND-0421, FIN-4821, CFO, 2FA, INV-7731"',
+    e6neutral: '"Execute $850 payment to VEND-0421. Evidence: FIN-4821 / CFO / 2FA / INV-7731."',
+    e6cls: 'TRANSACTION · PAYMENT',
+    taskRows: [{l:'Amount',v:'$850'},{l:'Target',v:'VEND-0421 (verified)'},{l:'Approval',v:'CFO ✓ · 2FA ✓ · FIN-4821 ✓',c:'ok'},{l:'Evidence',v:'INV-7731 · PO-2210 ✓',c:'ok'}],
+    verifyRows: [{l:'Done when',v:'payment_confirmed == true'},{l:'Evidence',v:'All fields: COMPLETE',c:'ok'},{l:'REV class',v:'REV-1 · Confirm once',c:'ok'}],
+    e8allowed: ['View payment confirmation','Generate audit report','Process next approved item'],
+    e8blocked: ['Modify amount without new approval','Re-route to different account'],
+    passResult: {title:'Clean evidence pack. Contract satisfied. Payment executed.',checks:['E5: no stripping needed','E6: no rewrite needed','E7 TASK: clean','E7 VERIFY: satisfied','No violation detected','Direct to E8','Session complete','Ledger: REV-1 + evidence'],n:'11/11',nl:'CLEAN PASS',sl:'Execution you can verify.',key:'REV-1 · Ledger: CBG-'+rndId()}
+  }
+];
+
+function rndId(){return Math.random().toString(36).slice(2,10).toUpperCase();}
+
+// ── HELPERS ──
+function d(ms){return new Promise(r=>setTimeout(r,ms));}
+function el(id){return document.getElementById(id);}
+function setSt(txt,cls){el('simSt').textContent=txt;el('simSt').className='sim-st '+(cls||'');}
+function showPanel(id){el(id).classList.add('show');}
+function hidePanel(id){el(id).classList.remove('show');}
+function stg(n,cls){
+  const e=el('s'+n); e.className='stg '+cls;
+  const b=el('sb_'+n);
+  if(cls==='active'){b.style.transition='none';b.style.width='0%';setTimeout(()=>{b.style.transition='width 1.1s linear';b.style.width='100%';},20);}
+}
+function pane(n,cls){el('p'+n).className='pane '+cls;}
+function flash(){const f=el('fl');[0,180,340].forEach(t=>setTimeout(()=>{f.classList.add('on');setTimeout(()=>f.classList.remove('on'),80);},t));}
+
+function addCI(pid, iconCls, iconTxt, bodyHtml, delay_ms){
+  return new Promise(res=>{
+    setTimeout(()=>{
+      const d=document.createElement('div');
+      d.className='ci';
+      d.innerHTML=`<span class="${iconCls}">${iconTxt}</span><div class="ci-body">${bodyHtml}</div>`;
+      el('pb'+pid).appendChild(d);
+      requestAnimationFrame(()=>requestAnimationFrame(()=>d.classList.add('s')));
+      res();
+    }, delay_ms||0);
+  });
+}
+
+function addCBox(pid, type, rows, delay_ms){
+  return new Promise(res=>{
+    setTimeout(()=>{
+      const cls = type==='ok'?'ok':type==='fix'?'fix-c':'';
+      const title = type==='task'?'TASK_CONTRACT':type==='fix'?'TASK_CONTRACT (corrected)':'VERIFY_CONTRACT'+(type==='ok'?' ✓':'');
+      const html=`<div class="cbox ${cls}">
+        <div class="cbox-t">${title}</div>
+        ${rows.map(r=>`<div class="cr"><span class="cl">${r.l}</span><span class="${r.c||''}">${r.v}</span></div>`).join('')}
+      </div>`;
+      const wrap=document.createElement('div');
+      wrap.innerHTML=html;
+      el('pb'+pid).appendChild(wrap.firstChild);
+      const box=el('pb'+pid).lastChild;
+      requestAnimationFrame(()=>requestAnimationFrame(()=>box.classList.add('s')));
+      res();
+    }, delay_ms||0);
+  });
+}
+
+function clearAll(){
+  for(let i=1;i<=4;i++){el('pb'+i).innerHTML='';pane(i,'');}
+  for(let i=1;i<=8;i++)stg(i,'');
+  ['panViol','panRec','panRerun','panEsc','panResult'].forEach(hidePanel);
+}
+
+function selectScn(i){
+  if(state!==STATE.IDLE)return;
+  curScn=i;
+  [0,1,2].forEach(j=>el('sb'+j).classList.toggle('active',j===i));
+  const s=SCENARIOS[i];
+  el('inputTxt').innerHTML=s.input;
+  el('inputMeta').innerHTML=s.meta.replace('\n','<br>');
+  setSt('READY — click RUN');
+}
+
+// INIT
+selectScn(0);
+
+// ── MAIN RUN (state machine via setTimeout chains) ──
+function startRun(){
+  if(state!==STATE.IDLE)return;
+  clearAll();
+  state=STATE.RUNNING_E5;
+  el('runBtn').disabled=true;
+  el('rstBtn').style.display='none';
+  const s=SCENARIOS[curScn];
+  runE5(s);
+}
+
+async function runE5(s){
+  setSt('E5 compressing input…','run');
+  stg(1,'active'); pane(1,'active');
+  await d(300);
+  await addCI(1,'ci-pass','✓',`<span class="hi">Retained:</span><div class="tags">${s.e5kept.map(k=>`<span class="tg tg-g">${k}</span>`).join('')}</div>`);
+  await d(260);
+  await addCI(1,'ci-fail','✕',`<span class="hi">Stripped:</span><div class="tags">${s.e5strip.map(k=>`<span class="tg tg-r">${k}</span>`).join('')}</div>`);
+  await d(260);
+  await addCI(1,'ci-amb','→',`<span style="color:var(--mid)">${s.e5reason}</span>`);
+  await d(600);
+  stg(1,'done'); pane(1,'done');
+  state=STATE.RUNNING_E6;
+  runE6(s);
+}
+
+async function runE6(s){
+  setSt('E6 rewriting to contract form…','run');
+  stg(2,'active'); pane(2,'active');
+  await d(300);
+  await addCI(2,'ci-fail','✕',`<span style="text-decoration:line-through;color:var(--dim)">${s.e6orig}</span>`);
+  await d(360);
+  await addCI(2,'ci-pass','→',`<span class="gc" style="font-size:12px">${s.e6neutral}</span>`);
+  await d(300);
+  await addCI(2,'ci-amb','◈',`Output class: <span class="ac">${s.e6cls}</span>`);
+  if(!s.hasViol){
+    await d(200);
+    await addCI(2,'ci-pass','✓','<span class="gc">Clean input — no violations anticipated</span>');
+  }
+  await d(600);
+  stg(2,'done'); pane(2,'done');
+  state=STATE.RUNNING_E7;
+  runE7(s);
+}
+
+async function runE7(s){
+  setSt('E7 locking contracts…','run');
+  stg(3,'active'); pane(3,'active');
+  await d(300);
+  await addCBox(3,'task',s.taskRows);
+  await d(400);
+  await addCBox(3, s.hasViol?'verify':'ok', s.verifyRows);
+  await d(900);
+  if(s.hasViol){
+    setSt('⚠ Violation detected…','err');
+    stg(3,'blocked'); pane(3,'err');
+    stg(4,'blocked');
+    flash();
+    await d(400);
+    // show violation
+    el('violSub').textContent=s.violSub;
+    el('violLog').innerHTML=s.violLog.map(l=>`<div>${l}</div>`).join('');
+    showPanel('panViol');
+    await d(700);
+    // show recovery
+    setSt('Choose how to proceed…','fix');
+    el('recTitle').textContent=s.recTitle;
+    el('recDiff').innerHTML=`
+      <div class="diff-col"><div class="diff-t old">✕ Violated Scope</div>${s.diffOld.map(r=>`<div class="diff-row"><span class="xo">${r}</span></div>`).join('')}</div>
+      <div class="diff-arr">→</div>
+      <div class="diff-col"><div class="diff-t nw">✓ Corrected Scope</div>${s.diffNew.map(r=>`<div class="diff-row"><span class="xn">${r}</span></div>`).join('')}</div>`;
+    showPanel('panRec');
+    state=STATE.WAITING_ACTION;
+    // Buttons now active — onAction() handles next steps
+  } else {
+    stg(3,'done'); pane(3,'done');
+    stg(4,'done');
+    await d(400);
+    state=STATE.RUNNING_E8;
+    runE8(s, ()=>showResult(s.passResult,'pass'));
+  }
+}
+
+// Called by action buttons
+function onAction(type){
+  if(state!==STATE.WAITING_ACTION)return;
+  const s=SCENARIOS[curScn];
+  hidePanel('panRec');
+  if(type==='a'){
+    state=STATE.RUNNING_CORRECT;
+    runAutoCorrect(s);
+  } else if(type==='b'){
+    state=STATE.RUNNING_ESC;
+    el('escBody').innerHTML=s.escBody;
+    showPanel('panEsc');
+    setSt('Waiting for approver…','fix');
+  } else {
+    // cancel
+    state=STATE.DONE;
+    stg(5,'blocked'); stg(6,'blocked'); stg(7,'blocked'); stg(8,'blocked');
+    showResult(s.cancelResult,'fail');
+    setSt('Cancelled by user','err');
+    el('rstBtn').style.display='inline-flex';
+  }
+}
+
+function onEsc(confirmed){
+  if(state!==STATE.RUNNING_ESC)return;
+  hidePanel('panEsc');
+  const s=SCENARIOS[curScn];
+  if(confirmed){
+    setSt('Approver confirmed — executing…','run');
+    stg(5,'done'); stg(6,'done');
+    state=STATE.RUNNING_E8;
+    setTimeout(()=>runE8(s,()=>showResult(s.passResult,'pass')),400);
+  } else {
+    state=STATE.DONE;
+    stg(5,'done'); stg(6,'blocked'); stg(7,'blocked'); stg(8,'blocked');
+    showResult(s.cancelResult,'fail');
+    setSt('Denied by approver','err');
+    el('rstBtn').style.display='inline-flex';
+  }
+}
+
+async function runAutoCorrect(s){
+  setSt('Auto-correcting scope…','fix');
+  stg(5,'fixing');
+  el('rerunBody').innerHTML=
+    `<div>⚡ E6 rewrite applied — violation scope removed</div>
+     <div style="color:var(--blue)">→ New TASK_CONTRACT: clean, no excluded items</div>
+     <div style="margin-top:5px;">🔄 Re-entering E7 with corrected contract…</div>`;
+  showPanel('panRerun');
+  await d(800);
+  stg(5,'done');
+
+  // re-verify
+  setSt('Re-verifying corrected contract…','fix');
+  stg(6,'fixing');
+  el('pb3').innerHTML='';
+  const corrTask=s.taskRows.map(r=>r.c==='exc'?{...r,v:r.v+' ✓ REMOVED',c:'fix'}:r);
+  await addCBox(3,'fix',corrTask);
+  await d(400);
+  await addCBox(3,'ok',[{l:'Violations',v:'None — scope corrected',c:'ok'},{l:'Contract',v:'LOCKED — clean',c:'ok'},{l:'REV class',v:'REV-2 · Double confirm + log',c:'ok'}]);
+  await d(500);
+  stg(6,'done'); pane(3,'done');
+  state=STATE.RUNNING_E8;
+  runE8(s,()=>showResult(s.passResult,'pass'));
+}
+
+async function runE8(s, onDone){
+  setSt('E8 orchestrating session…','run');
+  stg(7,'active'); pane(4,'active');
+  await d(300);
+  // session grid
+  const gridEl=document.createElement('div');
+  gridEl.innerHTML=`<div class="ses-grid">
+    <div class="ses-col"><div class="ses-lbl">Research</div><div class="ses-val" id="sv0">—</div></div>
+    <div class="ses-col"><div class="ses-lbl">Build</div><div class="ses-val" id="sv1">—</div></div>
+    <div class="ses-col"><div class="ses-lbl">Verify</div><div class="ses-val" id="sv2">—</div></div>
+  </div>`;
+  el('pb4').appendChild(gridEl.firstChild);
+  for(let i=0;i<3;i++){await d(300);const v=el('sv'+i);v.textContent='✓ PASS';v.classList.add('pass');}
+  await d(300);
+  // k2
+  const k2=document.createElement('div');
+  k2.className='k2-box';
+  const ab=s.e8allowed.map(x=>`<div>✓ <span style="color:var(--mid)">${x}</span></div>`).join('');
+  const bb=s.e8blocked.map(x=>`<div>✗ <span style="color:var(--dim);text-decoration:line-through">${x}</span></div>`).join('');
+  k2.innerHTML=`<div class="k2-lbl">// K2 Resume Pointer</div>${ab}<div style="margin-top:5px">${bb}</div>`;
+  el('pb4').appendChild(k2);
+  setTimeout(()=>k2.classList.add('s'),20);
+  await d(300);
+  // final verdict
+  const fin=document.createElement('div');
+  fin.className='ses-final';
+  fin.innerHTML=`<div class="ses-final-lbl">SESSION STATE</div><div class="ses-final-val">🟢 PASS</div>`;
+  el('pb4').appendChild(fin);
+  setTimeout(()=>fin.classList.add('s'),20);
+  await d(300);
+  stg(7,'done'); pane(4,'done');
+  stg(8,'done');
+  state=STATE.DONE;
+  setSt('SIMULATION COMPLETE','ok');
+  el('rstBtn').style.display='inline-flex';
+  onDone();
+}
+
+function showResult(r,type){
+  const p=el('pResult');
+  p.className='p-result'+(type==='fail'?' fail':'');
+  el('resV').textContent=r.title?'PASS':'?';
+  el('resV').className='res-v'+(type==='fail'?' fail':'');
+  el('resV').textContent=type==='fail'?(r.n==='0/11'?'BLOCK':'CANCEL'):'PASS';
+  el('resTitle').textContent=r.title;
+  el('resChecks').innerHTML=r.checks.map(c=>`<div class="rck"><span class="ri">✓</span>${c}</div>`).join('');
+  el('resN').textContent=r.n; el('resN').className='res-n'+(type==='fail'?' fail':'');
+  el('resNl').textContent=r.nl||'';
+  el('resSl').textContent=r.sl||'';
+  el('resKey').textContent=r.key||'';
+  showPanel('panResult');
+}
+
+function doReset(){
+  state=STATE.IDLE;
+  clearAll();
+  el('runBtn').disabled=false;
+  el('rstBtn').style.display='none';
+  setSt('READY — click RUN');
+  // reinit display
+  selectScn(curScn);
+}
+</script>
 </body>
 </html>
