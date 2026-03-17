@@ -2,7 +2,7 @@
 
 **Execution governance layer for AI systems. Contract before execution. Fail-Closed by default.**
 
-Calebear Gate is a public concept-demo project for checking trust conditions before execution.
+Calebear Gate is a public concept-demo project for governing execution before an AI system takes action.
 
 **No contract = no execution.**
 
@@ -10,18 +10,27 @@ Calebear Gate is a public concept-demo project for checking trust conditions bef
 
 ## Live Demo
 
-## Live Demo
-
 | Demo | URL |
 |---|---|
-| JWT Auth + ROME Gate | https://calebjangcj-hash.github.io/calebear-gate/demo/jwt-auth/ |
-| Gate Flow — Live Execution Simulation | https://calebjangcj-hash.github.io/calebear-gate/demo/gate-flow/ |
-| 4CASE Interactive | Coming next |
+| Execution Governance Demo (v3.1) | https://calebjangcj-hash.github.io/calebear-gate/demo/jwt-auth/ |
 
-These demos show simple **PASS / BLOCK** flows:
+This public demo shows an execution-governance flow, not just a generation result.
 
-- **PASS** — required conditions are satisfied
-- **BLOCK** — required conditions are missing, invalid, or out of scope
+Current visible flow:
+
+- **E5** — compress context
+- **E6** — rewrite into neutral contract form
+- **E7** — lock TASK + VERIFY
+- **AUTO-CORRECT** — remove out-of-scope execution
+- **RE-VERIFY** — check corrected contract again
+- **E8** — close with visible execution result
+
+Possible visible outcomes include:
+
+- **PASS** — execution is allowed
+- **CORRECT** — execution is adjusted and re-verified
+- **ESCALATE** — execution requires higher review
+- **DENY / CANCEL** — execution does not continue
 
 ---
 
@@ -43,58 +52,56 @@ The goal is to make execution more controllable, inspectable, and fail-closed.
 Before execution, the system checks whether the required conditions are met.
 
 Instead of asking:
+
 - "Can the system continue?"
 
 It asks:
+
 - "Has the system satisfied the contract to continue?"
 
-If not, execution stops.
+If not, the system does not proceed as-is.
+
+It may:
+
+- stop,
+- correct the scope,
+- require re-verification,
+- or escalate before execution.
 
 ---
 
-## PASS / BLOCK
+## What the current demo is showing
 
-### PASS
-Execution is allowed because the required condition is satisfied.
+The current public demo is intentionally simple.
 
-### BLOCK
-Execution is denied because the condition is missing, invalid, or out of scope.
+It is designed to show:
 
-This is the central rule of the project:
-
-**No trust condition → no execution.**
-
----
-
-## Current demo scope
-
-Current public demos include:
-
-- JWT-style execution gate example
-- ROME-framed execution boundary example
-- Gate Flow visual UX for E5→E8 understanding
-- browser-based PASS / BLOCK decision flow
-- visible execution decision in UI
-- minimal concept demonstrations of fail-closed execution
-
-Current public paths:
-- `demo/jwt-auth/index.html`
-- `demo/gate-flow/index.html`
-
-These are public concept demos, not production security packages.
-
----
-
-## What the demos are showing
-
-The current demos are intentionally simple.
-
-They are designed to show:
-
-- how execution can be gated before action
-- how PASS and BLOCK can be made visible
+- how execution can be governed before action
+- how scope drift can be detected
+- how auto-correction can remove out-of-scope steps
+- how re-verification can happen before execution continues
+- how execution results can be made visible in the UI
 - how fail-closed behavior can be demonstrated clearly
-- how execution flow can be understood visually before deeper implementation
+
+This is a public concept demo, not a production security package.
+
+---
+
+## Current public scope
+
+Current public path:
+
+- `demo/jwt-auth/index.html`
+
+Current demo direction includes:
+
+- execution governance before action
+- contract-first control
+- visible UI decision flow
+- scope lock patterns
+- re-verification before continuation
+- session-close awareness
+- audit-friendly execution flow
 
 ---
 
@@ -102,26 +109,13 @@ They are designed to show:
 
 Calebear Gate is moving toward a broader execution-boundary model, including ideas such as:
 
-- scope lock before execution
+- contract before execution
+- scope lock before action
+- neutral rewrite before tool use
 - verification before session close
 - separation between research, build, and verify
 - audit-friendly decision flow
 - visual execution mapping
-- contract-first agent control
-
----
-
-## What comes next
-
-Planned next steps:
-
-- JWT auth demo refinement
-- Gate Flow refinement
-- 4CASE Interactive demo
-- finance-gate expansion
-- broader execution-contract examples
-- tool scope control patterns
-- session separation patterns
 
 ---
 
@@ -131,9 +125,9 @@ Current status:
 
 - GitHub public repo created
 - GitHub Pages live
-- JWT Auth + ROME Gate demo published
-- Gate Flow demo being added
-- README expanded for public viewing
+- Execution Governance Demo v3.1 prepared for launch
+- public concept-demo positioning aligned
+- README updated to match current live direction
 
 ---
 
