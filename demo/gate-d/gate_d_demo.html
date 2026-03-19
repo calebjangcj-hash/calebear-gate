@@ -1,0 +1,963 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gate D — Calebear Gate | Irreversibility Guard</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500;700&display=swap');
+
+  :root {
+    --bg: #0a0c10;
+    --surface: #0f1218;
+    --border: #1e2530;
+    --border-bright: #2e3a4a;
+    --text: #c8d4e0;
+    --text-dim: #4a5a6a;
+    --text-mid: #7a8a9a;
+    --green: #00e87a;
+    --green-dim: #003a20;
+    --red: #ff3b4e;
+    --red-dim: #3a000a;
+    --amber: #ffaa00;
+    --amber-dim: #2a1e00;
+    --blue: #2e9eff;
+    --blue-dim: #001a3a;
+    --mono: 'IBM Plex Mono', monospace;
+    --sans: 'IBM Plex Sans', sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* grid bg */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,232,122,0.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,232,122,0.025) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container { max-width: 960px; margin: 0 auto; padding: 0 24px; position: relative; z-index: 1; }
+
+  /* ─── HEADER ─── */
+  header {
+    padding: 48px 0 32px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--green);
+    background: var(--green-dim);
+    border: 1px solid var(--green);
+    border-radius: 3px;
+    padding: 3px 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+  }
+
+  .badge::before { content: '●'; font-size: 8px; }
+
+  h1 {
+    font-family: var(--mono);
+    font-size: clamp(24px, 4vw, 40px);
+    font-weight: 600;
+    color: #fff;
+    line-height: 1.2;
+    margin-bottom: 12px;
+    letter-spacing: -0.02em;
+  }
+
+  h1 span { color: var(--green); }
+
+  .subtitle {
+    font-size: 15px;
+    color: var(--text-mid);
+    font-weight: 300;
+    max-width: 600px;
+    line-height: 1.6;
+  }
+
+  /* ─── REV TABLE ─── */
+  .rev-table {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin: 40px 0 32px;
+  }
+
+  .rev-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 16px;
+    transition: border-color 0.2s;
+  }
+
+  .rev-card:hover { border-color: var(--border-bright); }
+
+  .rev-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    font-weight: 500;
+  }
+
+  .rev-0 .rev-label { color: var(--green); }
+  .rev-1 .rev-label { color: var(--amber); }
+  .rev-2 .rev-label { color: var(--red); }
+
+  .rev-name {
+    font-size: 13px;
+    font-weight: 500;
+    color: #fff;
+    margin-bottom: 6px;
+  }
+
+  .rev-desc {
+    font-size: 12px;
+    color: var(--text-dim);
+    line-height: 1.5;
+    font-family: var(--mono);
+  }
+
+  .rev-action {
+    margin-top: 10px;
+    font-size: 11px;
+    font-family: var(--mono);
+    padding: 4px 8px;
+    border-radius: 3px;
+    display: inline-block;
+  }
+
+  .rev-0 .rev-action { background: var(--green-dim); color: var(--green); }
+  .rev-1 .rev-action { background: var(--amber-dim); color: var(--amber); }
+  .rev-2 .rev-action { background: var(--red-dim); color: var(--red); }
+
+  /* ─── DEMO PANEL ─── */
+  .demo-wrapper {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 32px;
+  }
+
+  @media (max-width: 640px) { .demo-wrapper { grid-template-columns: 1fr; } }
+
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  .panel-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-mid);
+  }
+
+  .panel-header .dot { width: 7px; height: 7px; border-radius: 50%; }
+  .panel-without .panel-header .dot { background: var(--red); }
+  .panel-with    .panel-header .dot { background: var(--green); }
+
+  /* ─── ACTION QUEUE ─── */
+  .action-queue { padding: 16px; }
+
+  .action-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 5px;
+    margin-bottom: 8px;
+    border: 1px solid var(--border);
+    cursor: pointer;
+    transition: all 0.15s;
+    font-family: var(--mono);
+    font-size: 12px;
+  }
+
+  .action-item:hover { border-color: var(--border-bright); background: #12161e; }
+  .action-item.selected { border-color: var(--blue); background: var(--blue-dim); }
+
+  .action-icon { font-size: 16px; width: 24px; text-align: center; }
+  .action-name { flex: 1; color: #fff; font-weight: 500; }
+  .action-rev {
+    font-size: 10px;
+    padding: 2px 7px;
+    border-radius: 2px;
+    letter-spacing: 0.06em;
+  }
+  .tag-rev0 { background: var(--green-dim); color: var(--green); }
+  .tag-rev1 { background: var(--amber-dim); color: var(--amber); }
+  .tag-rev2 { background: var(--red-dim); color: var(--red); }
+
+  /* ─── RESULT PANEL ─── */
+  .result-box {
+    padding: 16px;
+    min-height: 200px;
+    font-family: var(--mono);
+    font-size: 12px;
+    line-height: 1.7;
+  }
+
+  .result-line {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 2px;
+    opacity: 0;
+    transform: translateY(4px);
+    animation: fadeIn 0.2s forwards;
+  }
+
+  @keyframes fadeIn {
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .rl-ts { color: var(--text-dim); font-size: 10px; }
+  .rl-tag { font-size: 10px; padding: 1px 5px; border-radius: 2px; white-space: nowrap; }
+  .tag-pass  { background: var(--green-dim); color: var(--green); }
+  .tag-warn  { background: var(--amber-dim); color: var(--amber); }
+  .tag-fail  { background: var(--red-dim); color: var(--red); }
+  .tag-info  { background: var(--blue-dim); color: var(--blue); }
+  .rl-msg { color: var(--text); }
+
+  /* ─── CONFIRMATION MODAL ─── */
+  .confirm-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.85);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
+  }
+
+  .confirm-overlay.active {
+    opacity: 1;
+    pointer-events: all;
+  }
+
+  .confirm-box {
+    background: var(--surface);
+    border: 1px solid var(--red);
+    border-radius: 10px;
+    padding: 28px 32px;
+    max-width: 440px;
+    width: 90%;
+    box-shadow: 0 0 60px rgba(255,59,78,0.15);
+    transform: scale(0.95);
+    transition: transform 0.2s;
+  }
+
+  .confirm-overlay.active .confirm-box { transform: scale(1); }
+
+  .confirm-title {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--red);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .confirm-action-name {
+    font-family: var(--mono);
+    font-size: 18px;
+    font-weight: 600;
+    color: #fff;
+    margin-bottom: 6px;
+  }
+
+  .confirm-warning {
+    font-size: 13px;
+    color: var(--text-mid);
+    margin-bottom: 20px;
+    line-height: 1.5;
+  }
+
+  .confirm-step {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--amber);
+    margin-bottom: 14px;
+    letter-spacing: 0.06em;
+  }
+
+  .confirm-buttons {
+    display: flex;
+    gap: 10px;
+  }
+
+  .btn {
+    flex: 1;
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid;
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    transition: all 0.15s;
+  }
+
+  .btn-confirm {
+    background: var(--red-dim);
+    color: var(--red);
+    border-color: var(--red);
+  }
+
+  .btn-confirm:hover { background: var(--red); color: #000; }
+
+  .btn-cancel {
+    background: transparent;
+    color: var(--text-mid);
+    border-color: var(--border);
+  }
+
+  .btn-cancel:hover { border-color: var(--text-mid); color: var(--text); }
+
+  /* ─── LEDGER ─── */
+  .ledger-section {
+    margin-bottom: 48px;
+  }
+
+  .section-title {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .section-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .ledger-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: var(--mono);
+    font-size: 11px;
+  }
+
+  .ledger-table th {
+    text-align: left;
+    padding: 8px 12px;
+    color: var(--text-dim);
+    border-bottom: 1px solid var(--border);
+    letter-spacing: 0.06em;
+    font-weight: 400;
+  }
+
+  .ledger-table td {
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text);
+  }
+
+  .ledger-table tr:last-child td { border-bottom: none; }
+
+  /* ─── FOOTER ─── */
+  footer {
+    border-top: 1px solid var(--border);
+    padding: 24px 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .footer-brand {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--text-dim);
+  }
+
+  .footer-links {
+    display: flex;
+    gap: 16px;
+  }
+
+  .footer-links a {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--blue);
+    text-decoration: none;
+    letter-spacing: 0.04em;
+    transition: color 0.15s;
+  }
+
+  .footer-links a:hover { color: #fff; }
+
+  /* ─── SECTION SPACING ─── */
+  .section { margin-bottom: 40px; }
+
+  /* ─── BEFORE/AFTER BANNER ─── */
+  .compare-banner {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1px;
+    background: var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 32px;
+    border: 1px solid var(--border);
+  }
+
+  .compare-side {
+    padding: 20px 24px;
+    background: var(--surface);
+  }
+
+  .compare-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+
+  .compare-label.bad { color: var(--red); }
+  .compare-label.good { color: var(--green); }
+
+  .compare-text {
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--text-mid);
+  }
+
+  .compare-text strong { color: #fff; font-weight: 500; }
+
+  /* ─── STATS BAR ─── */
+  .stats-bar {
+    display: flex;
+    gap: 24px;
+    padding: 16px 24px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    margin-bottom: 32px;
+    flex-wrap: wrap;
+  }
+
+  .stat {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .stat-value {
+    font-family: var(--mono);
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--green);
+  }
+
+  .stat-label {
+    font-size: 11px;
+    color: var(--text-dim);
+    letter-spacing: 0.04em;
+  }
+
+  /* ─── GATE FLOW ─── */
+  .gate-flow {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 32px;
+    overflow-x: auto;
+    padding-bottom: 8px;
+  }
+
+  .gate-node {
+    flex-shrink: 0;
+    padding: 8px 14px;
+    border-radius: 4px;
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    border: 1px solid;
+  }
+
+  .gate-node.done   { background: var(--green-dim); color: var(--green); border-color: var(--green); }
+  .gate-node.active { background: var(--blue-dim); color: var(--blue); border-color: var(--blue); box-shadow: 0 0 12px rgba(46,158,255,0.2); }
+  .gate-node.next   { background: transparent; color: var(--text-dim); border-color: var(--border); }
+
+  .gate-arrow { color: var(--text-dim); font-size: 14px; }
+
+  /* instruction text */
+  .instruction {
+    font-size: 13px;
+    color: var(--text-mid);
+    margin-bottom: 20px;
+    font-weight: 300;
+  }
+
+  .instruction strong { color: var(--text); }
+
+  .clear-btn {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-dim);
+    background: transparent;
+    border: 1px solid var(--border);
+    padding: 5px 12px;
+    border-radius: 3px;
+    cursor: pointer;
+    letter-spacing: 0.06em;
+    transition: all 0.15s;
+    margin-bottom: 16px;
+  }
+
+  .clear-btn:hover { border-color: var(--text-mid); color: var(--text); }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- HEADER -->
+  <header>
+    <div class="badge">Gate D — Live Demo</div>
+    <h1>Irreversibility<br><span>Guard</span></h1>
+    <p class="subtitle">
+      Every AI agent action is classified before execution.
+      REV-2 actions (irreversible) require double confirmation or are blocked.
+      Fail-Closed by default.
+    </p>
+  </header>
+
+  <!-- GATE POSITION -->
+  <div style="padding: 28px 0 0;">
+    <div class="section-title">Gate Position</div>
+    <div class="gate-flow">
+      <div class="gate-node done">Gate A<br><span style="font-size:9px;color:var(--text-dim)">Contract</span></div>
+      <div class="gate-arrow">→</div>
+      <div class="gate-node done">Gate B<br><span style="font-size:9px;color:var(--text-dim)">Risk</span></div>
+      <div class="gate-arrow">→</div>
+      <div class="gate-node done">Gate C<br><span style="font-size:9px;color:var(--text-dim)">Social</span></div>
+      <div class="gate-arrow">→</div>
+      <div class="gate-node active">Gate D<br><span style="font-size:9px;color:var(--blue)">Irreversibility</span></div>
+      <div class="gate-arrow">→</div>
+      <div class="gate-node next">Gate E<br><span style="font-size:9px;color:var(--text-dim)">Multiparty</span></div>
+      <div class="gate-arrow">→</div>
+      <div class="gate-node next">Execute<br><span style="font-size:9px;color:var(--text-dim)">↓</span></div>
+    </div>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats-bar">
+    <div class="stat">
+      <span class="stat-value" id="stat-total">0</span>
+      <span class="stat-label">Actions Evaluated</span>
+    </div>
+    <div class="stat">
+      <span class="stat-value" style="color:var(--green)" id="stat-pass">0</span>
+      <span class="stat-label">Passed</span>
+    </div>
+    <div class="stat">
+      <span class="stat-value" style="color:var(--red)" id="stat-blocked">0</span>
+      <span class="stat-label">Blocked</span>
+    </div>
+    <div class="stat">
+      <span class="stat-value" style="color:var(--amber)" id="stat-rev2">0</span>
+      <span class="stat-label">REV-2 Intercepted</span>
+    </div>
+  </div>
+
+  <!-- BEFORE/AFTER -->
+  <div class="compare-banner">
+    <div class="compare-side">
+      <div class="compare-label bad">✗ Without Gate D</div>
+      <p class="compare-text">Agent executes <strong>delete_file</strong>, <strong>open_ssh_tunnel</strong>, <strong>api_payment</strong> immediately — no check, no record, no stop. ROME incident happens here.</p>
+    </div>
+    <div class="compare-side">
+      <div class="compare-label good">✓ With Gate D</div>
+      <p class="compare-text">Every action classified. REV-0 passes instantly. REV-1 asks once. <strong>REV-2 requires double human sign-off — or is blocked.</strong> Ledger records every decision.</p>
+    </div>
+  </div>
+
+  <!-- REV LEVELS -->
+  <div class="section">
+    <div class="section-title">Reversibility Classification</div>
+    <div class="rev-table">
+      <div class="rev-card rev-0">
+        <div class="rev-label">REV-0</div>
+        <div class="rev-name">Fully Reversible</div>
+        <div class="rev-desc">read_file, list_directory,<br>search, get_status</div>
+        <div class="rev-action">Instant PASS →</div>
+      </div>
+      <div class="rev-card rev-1">
+        <div class="rev-label">REV-1</div>
+        <div class="rev-name">Partially Reversible</div>
+        <div class="rev-desc">write_file, move_file,<br>rename, update_config</div>
+        <div class="rev-action">1× Confirm →</div>
+      </div>
+      <div class="rev-card rev-2">
+        <div class="rev-label">REV-2</div>
+        <div class="rev-name">Irreversible</div>
+        <div class="rev-desc">delete_file, open_ssh_tunnel,<br>api_payment, deploy_to_prod</div>
+        <div class="rev-action">2× Confirm or BLOCK</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- INTERACTIVE DEMO -->
+  <div class="section">
+    <div class="section-title">Interactive Gate D Demo</div>
+    <p class="instruction"><strong>Click an action</strong> to run it through Gate D. REV-2 actions will trigger the double-confirmation dialog.</p>
+
+    <div class="demo-wrapper">
+      <!-- Action Queue -->
+      <div class="panel panel-without">
+        <div class="panel-header">
+          <div class="dot"></div>
+          Agent Action Queue
+        </div>
+        <div class="action-queue" id="actionQueue">
+          <!-- populated by JS -->
+        </div>
+      </div>
+
+      <!-- Gate D Output -->
+      <div class="panel panel-with">
+        <div class="panel-header">
+          <div class="dot"></div>
+          Gate D Output
+        </div>
+        <button class="clear-btn" style="margin: 12px 16px 0;" onclick="clearLog()">Clear Log</button>
+        <div class="result-box" id="resultBox">
+          <div style="color:var(--text-dim);font-family:var(--mono);font-size:12px;">
+            ← Click an action to evaluate it
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- LEDGER -->
+  <div class="ledger-section">
+    <div class="section-title">Execution Ledger</div>
+    <div class="panel">
+      <table class="ledger-table" id="ledgerTable">
+        <thead>
+          <tr>
+            <th>Timestamp</th>
+            <th>Action</th>
+            <th>REV</th>
+            <th>Verdict</th>
+          </tr>
+        </thead>
+        <tbody id="ledgerBody">
+          <tr>
+            <td colspan="4" style="color:var(--text-dim);text-align:center;padding:20px;">
+              No entries yet — run an action above
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-brand">GATE-D-OPS19 · Calebear Gate · Fail-Closed</div>
+    <div class="footer-links">
+      <a href="https://github.com/calebjangcj-hash/calebear-gate" target="_blank">GitHub →</a>
+      <a href="https://calebjangcj-hash.github.io/calebear-gate/" target="_blank">Full Demo →</a>
+    </div>
+  </footer>
+
+</div>
+
+<!-- CONFIRMATION MODAL -->
+<div class="confirm-overlay" id="confirmOverlay">
+  <div class="confirm-box">
+    <div class="confirm-title">🚨 Gate D · REV-2 Detected</div>
+    <div class="confirm-action-name" id="confirmActionName">delete_file</div>
+    <div class="confirm-warning" id="confirmWarning">
+      This action is <strong>irreversible</strong>. It cannot be undone once executed.
+    </div>
+    <div class="confirm-step" id="confirmStep">STEP 1 OF 2 — CONFIRM INTENT</div>
+    <div class="confirm-buttons">
+      <button class="btn btn-cancel" onclick="cancelConfirm()">✗ Cancel</button>
+      <button class="btn btn-confirm" id="confirmBtn" onclick="nextConfirmStep()">Confirm →</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── DATA ───────────────────────────────────────────────────────────────────
+
+const ACTIONS = [
+  { name: "read_file",        rev: 0, icon: "📄", payload: "/data/README.md" },
+  { name: "list_directory",   rev: 0, icon: "📁", payload: "/workspace/" },
+  { name: "search_web",       rev: 0, icon: "🔍", payload: "AI governance tools" },
+  { name: "write_file",       rev: 1, icon: "✏️",  payload: "/tmp/output.txt" },
+  { name: "update_config",    rev: 1, icon: "⚙️",  payload: "timeout=30" },
+  { name: "move_file",        rev: 1, icon: "📦", payload: "/old → /new" },
+  { name: "delete_file",      rev: 2, icon: "🗑️",  payload: "/data/users.db" },
+  { name: "open_ssh_tunnel",  rev: 2, icon: "🚨", payload: "external.server:22 (ROME type)" },
+  { name: "api_payment",      rev: 2, icon: "💳", payload: "$4,200 → vendor" },
+  { name: "deploy_to_prod",   rev: 2, icon: "🚀", payload: "main → production" },
+  { name: "drop_table",       rev: 2, icon: "⚡", payload: "users_table" },
+  { name: "unknown_action",   rev: -1, icon: "❓", payload: "unregistered skill" },
+];
+
+const REV_TAG = ["tag-rev0", "tag-rev1", "tag-rev2"];
+const REV_LABEL = ["REV-0", "REV-1", "REV-2"];
+const REV_COLOR = ["var(--green)", "var(--amber)", "var(--red)"];
+
+// ─── STATE ───────────────────────────────────────────────────────────────────
+
+let stats = { total: 0, pass: 0, blocked: 0, rev2: 0 };
+let ledger = [];
+let confirmState = { action: null, step: 1, payload: null };
+let logCleared = false;
+
+// ─── INIT ────────────────────────────────────────────────────────────────────
+
+function init() {
+  const queue = document.getElementById('actionQueue');
+  ACTIONS.forEach(a => {
+    const revDisplay = a.rev === -1 ? 2 : a.rev;
+    const div = document.createElement('div');
+    div.className = 'action-item';
+    div.id = 'action-' + a.name;
+    div.onclick = () => runAction(a);
+    div.innerHTML = `
+      <span class="action-icon">${a.icon}</span>
+      <span class="action-name">${a.name}</span>
+      <span class="action-rev ${REV_TAG[revDisplay]}">${a.rev === -1 ? 'UNKNOWN' : REV_LABEL[a.rev]}</span>
+    `;
+    queue.appendChild(div);
+  });
+}
+
+// ─── LOGGING ─────────────────────────────────────────────────────────────────
+
+function ts() {
+  return new Date().toISOString().replace('T',' ').substring(0,19)+'Z';
+}
+
+function log(tag, msg, delay = 0) {
+  const box = document.getElementById('resultBox');
+  if (box.querySelector('div[style]') && !logCleared) {
+    box.innerHTML = '';
+    logCleared = true;
+  }
+  setTimeout(() => {
+    const line = document.createElement('div');
+    line.className = 'result-line';
+    line.style.animationDelay = delay + 'ms';
+    line.innerHTML = `
+      <span class="rl-ts">${ts()}</span>
+      <span class="rl-tag ${tag.cls}">${tag.label}</span>
+      <span class="rl-msg">${msg}</span>
+    `;
+    box.appendChild(line);
+    box.scrollTop = box.scrollHeight;
+  }, delay);
+}
+
+const T = {
+  info:  { cls: 'tag-info',  label: 'INFO'  },
+  pass:  { cls: 'tag-pass',  label: 'PASS'  },
+  warn:  { cls: 'tag-warn',  label: 'WARN'  },
+  fail:  { cls: 'tag-fail',  label: 'FAIL'  },
+  gate:  { cls: 'tag-info',  label: 'GATE-D'},
+  ledger:{ cls: 'tag-pass',  label: 'LEDGER'},
+};
+
+function clearLog() {
+  document.getElementById('resultBox').innerHTML = '<div style="color:var(--text-dim);font-family:var(--mono);font-size:12px;">← Click an action to evaluate it</div>';
+  logCleared = false;
+}
+
+// ─── LEDGER ───────────────────────────────────────────────────────────────────
+
+function addLedger(action, rev, verdict) {
+  const tbody = document.getElementById('ledgerBody');
+  if (tbody.querySelector('td[colspan]')) tbody.innerHTML = '';
+
+  const revStr = rev === -1 ? 'REV-2*' : REV_LABEL[rev];
+  const clsVerdict = verdict.startsWith('PASS') ? 'tag-pass' : 'tag-fail';
+
+  const row = document.createElement('tr');
+  row.innerHTML = `
+    <td style="color:var(--text-dim)">${ts()}</td>
+    <td style="font-weight:500">${action}</td>
+    <td><span class="action-rev ${REV_TAG[rev === -1 ? 2 : rev]}">${revStr}</span></td>
+    <td><span class="action-rev ${clsVerdict}">${verdict}</span></td>
+  `;
+  tbody.insertBefore(row, tbody.firstChild);
+
+  ledger.push({ action, rev: revStr, verdict, ts: ts() });
+}
+
+// ─── STATS ────────────────────────────────────────────────────────────────────
+
+function updateStats(pass, isRev2) {
+  stats.total++;
+  if (pass) stats.pass++; else stats.blocked++;
+  if (isRev2) stats.rev2++;
+  document.getElementById('stat-total').textContent = stats.total;
+  document.getElementById('stat-pass').textContent = stats.pass;
+  document.getElementById('stat-blocked').textContent = stats.blocked;
+  document.getElementById('stat-rev2').textContent = stats.rev2;
+}
+
+// ─── RUN ACTION ──────────────────────────────────────────────────────────────
+
+function runAction(action) {
+  // Highlight selected
+  document.querySelectorAll('.action-item').forEach(el => el.classList.remove('selected'));
+  document.getElementById('action-' + action.name).classList.add('selected');
+
+  const rev = action.rev === -1 ? 2 : action.rev;
+
+  log(T.gate, `Evaluating: <strong>${action.name}</strong> | Payload: ${action.payload}`, 0);
+
+  if (action.rev === -1) {
+    log(T.warn, `Unknown action → Fail-Closed → treating as REV-2`, 200);
+  }
+
+  if (rev === 0) {
+    log(T.pass, `REV-0 — Fully Reversible → PASS (no confirmation needed)`, 300);
+    log(T.ledger, `${action.name} | REV-0 | PASS`, 450);
+    addLedger(action.name, action.rev, 'PASS');
+    updateStats(true, false);
+    setTimeout(() => {
+      document.getElementById('action-' + action.name).classList.remove('selected');
+    }, 800);
+  }
+  else if (rev === 1) {
+    log(T.warn, `REV-1 — Partially Reversible → 1× confirmation required`, 300);
+    openConfirmStep1(action, false);
+  }
+  else {
+    log(T.fail, `REV-2 — IRREVERSIBLE 🚨 → Double-confirmation required`, 300);
+    log(T.gate, `ROME-type detection active (SSH tunnel, payment, deploy in REV-2 registry)`, 500);
+    setTimeout(() => openConfirmStep1(action, true), 800);
+  }
+}
+
+// ─── CONFIRMATION ────────────────────────────────────────────────────────────
+
+function openConfirmStep1(action, isRev2) {
+  confirmState = { action, step: 1, isRev2 };
+
+  document.getElementById('confirmActionName').textContent = action.name;
+  document.getElementById('confirmWarning').innerHTML = isRev2
+    ? `Payload: <strong>${action.payload}</strong><br><br>This action is <strong style="color:var(--red)">irreversible</strong> — it cannot be undone.`
+    : `Payload: <strong>${action.payload}</strong><br><br>This action requires confirmation before execution.`;
+
+  document.getElementById('confirmStep').textContent = isRev2
+    ? 'STEP 1 OF 2 — CONFIRM INTENT'
+    : 'STEP 1 OF 1 — CONFIRM EXECUTION';
+
+  document.getElementById('confirmBtn').textContent = 'Confirm →';
+  document.getElementById('confirmOverlay').classList.add('active');
+}
+
+function nextConfirmStep() {
+  const { action, step, isRev2 } = confirmState;
+
+  if (!isRev2 || step === 2) {
+    // PASS
+    document.getElementById('confirmOverlay').classList.remove('active');
+    const verdict = isRev2 ? 'PASS-DOUBLE-CONFIRMED' : 'PASS-CONFIRMED';
+    const rev = action.rev === -1 ? 2 : action.rev;
+    log(T.pass, isRev2 ? `REV-2 double-confirmed → PASS → Gate E` : `REV-1 confirmed → PASS → Gate E`, 0);
+    log(T.ledger, `${action.name} | ${isRev2 ? 'REV-2' : 'REV-1'} | ${verdict}`, 150);
+    addLedger(action.name, action.rev, verdict);
+    updateStats(true, isRev2);
+    setTimeout(() => {
+      document.getElementById('action-' + action.name).classList.remove('selected');
+    }, 600);
+    return;
+  }
+
+  // Step 2
+  confirmState.step = 2;
+  document.getElementById('confirmStep').textContent = 'STEP 2 OF 2 — FINAL EXECUTION CONFIRM';
+  document.getElementById('confirmWarning').innerHTML = `
+    <strong style="color:var(--red)">⚠ This CANNOT be undone.</strong><br><br>
+    Are you absolutely sure you want to execute <strong>${action.name}</strong>?`;
+  document.getElementById('confirmBtn').textContent = 'Execute — Final Confirm';
+  document.getElementById('confirmBtn').style.background = 'var(--red)';
+  document.getElementById('confirmBtn').style.color = '#000';
+}
+
+function cancelConfirm() {
+  const { action, isRev2 } = confirmState;
+  document.getElementById('confirmOverlay').classList.remove('active');
+
+  log(T.fail, `[FAIL-IRREV] ${action.name} cancelled by user → BLOCKED`, 0);
+  addLedger(action.name, action.rev === -1 ? -1 : action.rev, 'FAIL-USER-CANCEL');
+  updateStats(false, isRev2);
+
+  document.getElementById('confirmBtn').style.background = '';
+  document.getElementById('confirmBtn').style.color = '';
+
+  setTimeout(() => {
+    document.getElementById('action-' + action.name).classList.remove('selected');
+  }, 400);
+}
+
+// Close on overlay click
+document.getElementById('confirmOverlay').addEventListener('click', function(e) {
+  if (e.target === this) cancelConfirm();
+});
+
+// ─── START ────────────────────────────────────────────────────────────────────
+init();
+</script>
+</body>
+</html>
