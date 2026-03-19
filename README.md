@@ -13,8 +13,11 @@ Calebear Gate is a public concept-demo project for governing execution before an
 | Demo | URL |
 |---|---|
 | Execution Governance Demo (v3.1) | https://calebjangcj-hash.github.io/calebear-gate/demo/jwt-auth/ |
+| Irreversibility Guard Demo (Gate D) | https://calebjangcj-hash.github.io/calebear-gate/demo/gate-d/gate_d_demo.html |
 
-This public demo shows an execution-governance flow, not just a generation result.
+These public demos show execution governance before action, not just generation results.
+
+### Demo 1 — Execution Governance Demo (v3.1)
 
 Current visible flow:
 
@@ -31,6 +34,27 @@ Possible visible outcomes include:
 - **CORRECT** — execution is adjusted and re-verified
 - **ESCALATE** — execution requires higher review
 - **DENY / CANCEL** — execution does not continue
+
+### Demo 2 — Irreversibility Guard Demo (Gate D)
+
+This public demo shows how agent actions can be classified by reversibility before execution.
+
+Current visible idea:
+
+- **REV-0** — fully reversible actions can pass instantly
+- **REV-1** — partially reversible actions require confirmation
+- **REV-2** — irreversible actions require double human sign-off or are blocked
+
+Example REV-2 actions include:
+
+- `delete_file`
+- `open_ssh_tunnel`
+- `api_payment`
+- `deploy_to_prod`
+
+This demo is designed to make one point visible:
+
+**Irreversible execution should not proceed on a single unchecked step.**
 
 ---
 
@@ -66,40 +90,46 @@ It may:
 - stop,
 - correct the scope,
 - require re-verification,
+- require human confirmation,
 - or escalate before execution.
 
 ---
 
-## What the current demo is showing
+## What the current demos are showing
 
-The current public demo is intentionally simple.
+The current public demos are intentionally simple.
 
-It is designed to show:
+They are designed to show:
 
 - how execution can be governed before action
 - how scope drift can be detected
 - how auto-correction can remove out-of-scope steps
 - how re-verification can happen before execution continues
+- how irreversible actions can be classified before execution
+- how high-risk actions can require stronger human confirmation
 - how execution results can be made visible in the UI
 - how fail-closed behavior can be demonstrated clearly
 
-This is a public concept demo, not a production security package.
+These are public concept demos, not production security packages.
 
 ---
 
 ## Current public scope
 
-Current public path:
+Current public paths:
 
 - `demo/jwt-auth/index.html`
+- `demo/gate-d/gate_d_demo.html`
 
-Current demo direction includes:
+Current public direction includes:
 
 - execution governance before action
 - contract-first control
 - visible UI decision flow
 - scope lock patterns
 - re-verification before continuation
+- irreversibility-aware action control
+- stronger confirmation for high-risk execution
 - session-close awareness
 - audit-friendly execution flow
 
@@ -112,6 +142,7 @@ Calebear Gate is moving toward a broader execution-boundary model, including ide
 - contract before execution
 - scope lock before action
 - neutral rewrite before tool use
+- reversibility classification before high-risk actions
 - verification before session close
 - separation between research, build, and verify
 - audit-friendly decision flow
@@ -125,7 +156,8 @@ Current status:
 
 - GitHub public repo created
 - GitHub Pages live
-- Execution Governance Demo v3.1 prepared for launch
+- Execution Governance Demo v3.1 live
+- Irreversibility Guard Demo (Gate D) live
 - public concept-demo positioning aligned
 - README updated to match current live direction
 
