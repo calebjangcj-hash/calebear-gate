@@ -14,6 +14,7 @@ Calebear Gate is a public concept-demo project for governing execution before an
 |---|---|
 | Execution Governance Demo (v3.1) | https://calebjangcj-hash.github.io/calebear-gate/demo/jwt-auth/ |
 | Irreversibility Guard Demo (Gate D) | https://calebjangcj-hash.github.io/calebear-gate/demo/gate-d/gate_d_demo.html |
+| 30-Second Business Demo | https://calebjangcj-hash.github.io/calebear-gate/demo/gate-30s-business/ |
 
 These public demos show execution governance before action, not just generation results.
 
