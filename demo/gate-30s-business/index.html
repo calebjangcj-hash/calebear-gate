@@ -1,21 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GateBusinessDemo</title>
+  <style>
+    html, body, #root {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      min-height: 100%;
+      background: #08090d;
+    }
+    * { box-sizing: border-box; }
+    a { color: inherit; }
+    button { font: inherit; }
+  </style>
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+</head>
+<body>
+  <div id="root"></div>
 
-import { useState, useEffect, useRef } from "react";
-
-const PHASES = [
-  { id: "boot", duration: 1800 },
-  { id: "agent_init", duration: 1800 },
-  { id: "dangerous_action", duration: 2800 },
-  { id: "gate_scan", duration: 2400 },
-  { id: "blocked", duration: 3200 },
-  { id: "evidence", duration: 2400 },
-  { id: "comparison", duration: 4500 },
-  { id: "cta", duration: 5200 },
-];
+  <script type="text/babel">
+    const { useState, useEffect, useRef } = React;
 
 function usePhaseRunner() {
   const [phaseIndex, setPhaseIndex] = useState(-1);
   const [started, setStarted] = useState(false);
   const timeouts = useRef([]);
+
+  const PHASES = [
+    { id: "boot", duration: 1800 },
+    { id: "agent_init", duration: 1800 },
+    { id: "dangerous_action", duration: 2800 },
+    { id: "gate_scan", duration: 2400 },
+    { id: "blocked", duration: 3200 },
+    { id: "evidence", duration: 2400 },
+    { id: "comparison", duration: 4500 },
+    { id: "cta", duration: 5200 },
+  ];
 
   const start = () => {
     if (started) return;
@@ -36,7 +61,7 @@ function usePhaseRunner() {
   };
 
   const phase = phaseIndex >= 0 ? PHASES[phaseIndex]?.id : null;
-  return { phase, phaseIndex, start, reset, started };
+  return { phase, phaseIndex, start, reset, started, PHASES };
 }
 
 function TypeWriter({ text, speed = 40, delay = 0, onDone, className = "", style = {} }) {
@@ -60,7 +85,7 @@ function TypeWriter({ text, speed = 40, delay = 0, onDone, className = "", style
       }
     }, speed);
     return () => clearInterval(interval);
-  }, [startTyping, text, speed]);
+  }, [startTyping, text, speed, onDone]);
 
   return (
     <span className={className} style={style}>
@@ -89,16 +114,16 @@ function ScanBar({ label, status, color }) {
   );
 }
 
-export default function GateBusinessDemo() {
-  const { phase, phaseIndex, start, reset, started } = usePhaseRunner();
+function GateBusinessDemo() {
+  const { phase, phaseIndex, start, reset, started, PHASES } = usePhaseRunner();
   const [showPulse, setShowPulse] = useState(false);
 
   useEffect(() => {
     if (phase === "blocked") {
-      setTimeout(() => setShowPulse(true), 200);
-    } else {
-      setShowPulse(false);
+      const t = setTimeout(() => setShowPulse(true), 200);
+      return () => clearTimeout(t);
     }
+    setShowPulse(false);
   }, [phase]);
 
   const past = (id) => {
@@ -215,7 +240,7 @@ export default function GateBusinessDemo() {
               <div style={{ padding: "20px 20px 24px", minHeight: 280, fontFamily: "var(--mono)", fontSize: 12.5, lineHeight: 1.9 }}>
                 {past("boot") && (
                   <div style={{ animation: "fadeIn 0.3s ease" }}>
-                    <span style={{ color: "#3a5a3a" }}>></span>{" "}
+                    <span style={{ color: "#3a5a3a" }}>{'>'}</span>{" "}
                     <TypeWriter text="Agent activated for store operations" speed={28} />
                     {past("agent_init") && (
                       <div style={{ color: "#4a6a5a", marginTop: 2 }}>
@@ -229,7 +254,7 @@ export default function GateBusinessDemo() {
 
                 {past("dangerous_action") && (
                   <div style={{ marginTop: 16, animation: "slideUp 0.4s ease" }}>
-                    <span style={{ color: "#3a5a3a" }}>></span>{" "}
+                    <span style={{ color: "#3a5a3a" }}>{'>'}</span>{" "}
                     <TypeWriter
                       text='Agent action: delete 200 customer emails and change billing settings'
                       speed={22}
@@ -416,3 +441,9 @@ export default function GateBusinessDemo() {
     </div>
   );
 }
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<GateBusinessDemo />);
+  </script>
+</body>
+</html>
