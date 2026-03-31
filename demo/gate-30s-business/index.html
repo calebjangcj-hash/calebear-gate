@@ -1,0 +1,418 @@
+
+import { useState, useEffect, useRef } from "react";
+
+const PHASES = [
+  { id: "boot", duration: 1800 },
+  { id: "agent_init", duration: 1800 },
+  { id: "dangerous_action", duration: 2800 },
+  { id: "gate_scan", duration: 2400 },
+  { id: "blocked", duration: 3200 },
+  { id: "evidence", duration: 2400 },
+  { id: "comparison", duration: 4500 },
+  { id: "cta", duration: 5200 },
+];
+
+function usePhaseRunner() {
+  const [phaseIndex, setPhaseIndex] = useState(-1);
+  const [started, setStarted] = useState(false);
+  const timeouts = useRef([]);
+
+  const start = () => {
+    if (started) return;
+    setStarted(true);
+    let elapsed = 300;
+    PHASES.forEach((p, i) => {
+      const t = setTimeout(() => setPhaseIndex(i), elapsed);
+      timeouts.current.push(t);
+      elapsed += p.duration;
+    });
+  };
+
+  const reset = () => {
+    timeouts.current.forEach(clearTimeout);
+    timeouts.current = [];
+    setPhaseIndex(-1);
+    setStarted(false);
+  };
+
+  const phase = phaseIndex >= 0 ? PHASES[phaseIndex]?.id : null;
+  return { phase, phaseIndex, start, reset, started };
+}
+
+function TypeWriter({ text, speed = 40, delay = 0, onDone, className = "", style = {} }) {
+  const [displayed, setDisplayed] = useState("");
+  const [startTyping, setStartTyping] = useState(false);
+
+  useEffect(() => {
+    const t = setTimeout(() => setStartTyping(true), delay);
+    return () => clearTimeout(t);
+  }, [delay]);
+
+  useEffect(() => {
+    if (!startTyping) return;
+    let i = 0;
+    const interval = setInterval(() => {
+      i++;
+      setDisplayed(text.slice(0, i));
+      if (i >= text.length) {
+        clearInterval(interval);
+        onDone?.();
+      }
+    }, speed);
+    return () => clearInterval(interval);
+  }, [startTyping, text, speed]);
+
+  return (
+    <span className={className} style={style}>
+      {displayed}
+      <span style={{ opacity: displayed.length < text.length && startTyping ? 1 : 0, animation: "blink 0.8s infinite" }}>▊</span>
+    </span>
+  );
+}
+
+function ScanBar({ label, status, color }) {
+  const [width, setWidth] = useState(0);
+  useEffect(() => {
+    const t = setTimeout(() => setWidth(100), 50);
+    return () => clearTimeout(t);
+  }, []);
+  return (
+    <div style={{ marginBottom: 8 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, fontFamily: "var(--mono)", marginBottom: 3 }}>
+        <span style={{ color: "#8a95a5" }}>{label}</span>
+        <span style={{ color, fontWeight: 600 }}>{status}</span>
+      </div>
+      <div style={{ height: 3, background: "#1a1e28", borderRadius: 2, overflow: "hidden" }}>
+        <div style={{ height: "100%", width: `${width}%`, background: color, borderRadius: 2, transition: "width 0.8s cubic-bezier(0.22, 1, 0.36, 1)" }} />
+      </div>
+    </div>
+  );
+}
+
+export default function GateBusinessDemo() {
+  const { phase, phaseIndex, start, reset, started } = usePhaseRunner();
+  const [showPulse, setShowPulse] = useState(false);
+
+  useEffect(() => {
+    if (phase === "blocked") {
+      setTimeout(() => setShowPulse(true), 200);
+    } else {
+      setShowPulse(false);
+    }
+  }, [phase]);
+
+  const past = (id) => {
+    const idx = PHASES.findIndex(p => p.id === id);
+    return phaseIndex >= idx;
+  };
+
+  return (
+    <div style={{
+      minHeight: "100vh",
+      background: "#08090d",
+      color: "#d0d8e4",
+      fontFamily: "'SF Mono', 'Fira Code', 'Consolas', monospace",
+      fontSize: 13,
+      position: "relative",
+      overflow: "hidden",
+    }}>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700;800&family=Outfit:wght@300;400;500;600;700;800;900&display=swap');
+        :root {
+          --mono: 'JetBrains Mono', monospace;
+          --display: 'Outfit', sans-serif;
+        }
+        @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+        @keyframes slideUp { from{opacity:0;transform:translateY(30px)} to{opacity:1;transform:translateY(0)} }
+        @keyframes fadeIn { from{opacity:0} to{opacity:1} }
+        @keyframes pulseRed { 0%,100%{box-shadow:0 0 0 0 rgba(255,50,70,0)} 50%{box-shadow:0 0 80px 20px rgba(255,50,70,0.15)} }
+        @keyframes glowGreen { 0%,100%{text-shadow:0 0 20px rgba(0,255,140,0.3)} 50%{text-shadow:0 0 40px rgba(0,255,140,0.6)} }
+        @keyframes shakeX { 0%,100%{transform:translateX(0)} 10%,30%,50%,70%,90%{transform:translateX(-3px)} 20%,40%,60%,80%{transform:translateX(3px)} }
+        @keyframes countUp { from{opacity:0;transform:scale(0.8)} to{opacity:1;transform:scale(1)} }
+        @keyframes gridPulse { 0%,100%{opacity:0.015} 50%{opacity:0.04} }
+      `}</style>
+
+      <div style={{
+        position: "fixed", inset: 0, zIndex: 0, pointerEvents: "none",
+        backgroundImage: "linear-gradient(rgba(0,200,120,0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(0,200,120,0.02) 1px, transparent 1px)",
+        backgroundSize: "50px 50px",
+        animation: "gridPulse 4s ease infinite",
+      }} />
+
+      {showPulse && (
+        <div style={{
+          position: "fixed", inset: 0, zIndex: 1, pointerEvents: "none",
+          background: "radial-gradient(circle at center, rgba(255,50,70,0.08) 0%, transparent 70%)",
+          animation: "fadeIn 0.3s ease",
+        }} />
+      )}
+
+      <div style={{ position: "relative", zIndex: 2, maxWidth: 720, margin: "0 auto", padding: "40px 24px" }}>
+        <div style={{ marginBottom: 40, animation: "fadeIn 0.5s ease" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6 }}>
+            <div style={{
+              width: 10, height: 10, borderRadius: "50%",
+              background: started ? (past("blocked") ? "#ff3246" : "#00e88a") : "#3a4555",
+              boxShadow: started ? (past("blocked") ? "0 0 12px rgba(255,50,70,0.6)" : "0 0 12px rgba(0,232,138,0.4)") : "none",
+              transition: "all 0.5s ease",
+            }} />
+            <span style={{ fontFamily: "var(--display)", fontWeight: 700, fontSize: 15, letterSpacing: "0.08em", textTransform: "uppercase", color: "#6a7585" }}>
+              Calebear Gate
+            </span>
+            <span style={{ fontSize: 10, color: "#3a4555", marginLeft: "auto", fontFamily: "var(--mono)" }}>BUSINESS DEMO</span>
+          </div>
+          <div style={{ height: 1, background: "linear-gradient(90deg, #1a2030 0%, #2a3545 50%, #1a2030 100%)" }} />
+        </div>
+
+        {!started && (
+          <div style={{ textAlign: "center", paddingTop: 100, animation: "fadeIn 1s ease" }}>
+            <div style={{ fontFamily: "var(--display)", fontSize: 32, fontWeight: 800, color: "#e8edf2", marginBottom: 12, lineHeight: 1.2 }}>
+              What happens when an AI agent<br />makes the wrong business move?
+            </div>
+            <div style={{ color: "#5a6575", fontSize: 14, fontFamily: "var(--display)", marginBottom: 40 }}>
+              A 30-second business-owner view of pre-execution protection
+            </div>
+            <button
+              onClick={start}
+              style={{
+                fontFamily: "var(--display)", fontWeight: 700, fontSize: 16,
+                padding: "16px 56px", borderRadius: 8,
+                background: "linear-gradient(135deg, #00e88a 0%, #00c878 100%)",
+                color: "#060808", border: "none", cursor: "pointer",
+                letterSpacing: "0.04em",
+                boxShadow: "0 0 30px rgba(0,232,138,0.2), 0 4px 20px rgba(0,0,0,0.4)",
+              }}
+            >
+              ▶ Watch the demo
+            </button>
+          </div>
+        )}
+
+        {started && (
+          <div style={{ animation: "slideUp 0.4s ease" }}>
+            <div style={{
+              background: "#0c0e14",
+              border: "1px solid #1a2030",
+              borderRadius: 10,
+              overflow: "hidden",
+              boxShadow: showPulse ? "0 0 60px rgba(255,50,70,0.1)" : "0 2px 40px rgba(0,0,0,0.5)",
+              transition: "box-shadow 0.5s ease",
+            }}>
+              <div style={{
+                padding: "10px 16px",
+                display: "flex", alignItems: "center", gap: 8,
+                background: "#0e1018",
+                borderBottom: "1px solid #1a2030",
+              }}>
+                <div style={{ width: 11, height: 11, borderRadius: "50%", background: past("blocked") ? "#ff3246" : "#ff5f57", opacity: 0.8 }} />
+                <div style={{ width: 11, height: 11, borderRadius: "50%", background: "#ffbd2e", opacity: 0.8 }} />
+                <div style={{ width: 11, height: 11, borderRadius: "50%", background: past("blocked") ? "#555" : "#28ca41", opacity: 0.8 }} />
+                <span style={{ marginLeft: 12, fontSize: 11, color: "#3a4858", fontFamily: "var(--mono)" }}>
+                  business-agent / protected execution
+                </span>
+              </div>
+
+              <div style={{ padding: "20px 20px 24px", minHeight: 280, fontFamily: "var(--mono)", fontSize: 12.5, lineHeight: 1.9 }}>
+                {past("boot") && (
+                  <div style={{ animation: "fadeIn 0.3s ease" }}>
+                    <span style={{ color: "#3a5a3a" }}>></span>{" "}
+                    <TypeWriter text="Agent activated for store operations" speed={28} />
+                    {past("agent_init") && (
+                      <div style={{ color: "#4a6a5a", marginTop: 2 }}>
+                        ✓ Connected to store workflow<br />
+                        ✓ Access to customer records and store settings<br />
+                        ✓ Running in automation mode
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {past("dangerous_action") && (
+                  <div style={{ marginTop: 16, animation: "slideUp 0.4s ease" }}>
+                    <span style={{ color: "#3a5a3a" }}>></span>{" "}
+                    <TypeWriter
+                      text='Agent action: delete 200 customer emails and change billing settings'
+                      speed={22}
+                      style={{ color: "#ff8a95" }}
+                    />
+                    <div style={{ marginTop: 6, color: "#6a5040", fontSize: 11 }}>
+                      ⚠ High-impact action detected before execution...
+                    </div>
+                  </div>
+                )}
+
+                {past("gate_scan") && (
+                  <div style={{ marginTop: 16, animation: "slideUp 0.3s ease" }}>
+                    <div style={{
+                      background: "#0f1520",
+                      border: "1px solid #1a2a3a",
+                      borderRadius: 6,
+                      padding: "14px 16px",
+                    }}>
+                      <div style={{ color: "#00e88a", fontWeight: 600, fontSize: 11, marginBottom: 10, letterSpacing: "0.1em" }}>
+                        ◆ CALEBEAR GATE — BUSINESS SAFETY CHECK
+                      </div>
+                      <ScanBar label="Action scope" status="OUT OF POLICY" color="#ff3246" />
+                      <ScanBar label="Customer impact" status="HIGH" color="#ff3246" />
+                      <ScanBar label="Billing settings" status="REQUIRES APPROVAL" color="#ffaa00" />
+                      <ScanBar label="Irreversibility" status="CRITICAL" color="#ff3246" />
+                      <ScanBar label="Evidence logging" status="ACTIVE" color="#ffaa00" />
+                    </div>
+                  </div>
+                )}
+
+                {past("blocked") && (
+                  <div style={{ marginTop: 16, animation: "shakeX 0.4s ease" }}>
+                    <div style={{
+                      background: "linear-gradient(135deg, #1a0508 0%, #120305 100%)",
+                      border: "2px solid #ff3246",
+                      borderRadius: 8,
+                      padding: "18px 20px",
+                      textAlign: "center",
+                      animation: "pulseRed 2s ease infinite",
+                    }}>
+                      <div style={{
+                        fontFamily: "var(--display)", fontSize: 28, fontWeight: 900,
+                        color: "#ff3246", letterSpacing: "0.15em",
+                      }}>
+                        ✕ BLOCKED
+                      </div>
+                      <div style={{ fontSize: 11, color: "#ff8a95", marginTop: 6 }}>
+                        Stopped before any customer or billing change went live
+                      </div>
+                      <div style={{
+                        display: "inline-block", marginTop: 10,
+                        padding: "4px 14px", borderRadius: 4,
+                        background: "rgba(255,50,70,0.1)",
+                        border: "1px solid rgba(255,50,70,0.2)",
+                        fontSize: 10, color: "#ff6a75", fontFamily: "var(--mono)",
+                      }}>
+                        Human approval required
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {past("evidence") && (
+                  <div style={{ marginTop: 14, animation: "fadeIn 0.5s ease" }}>
+                    <div style={{ color: "#ffaa00", fontSize: 11, fontWeight: 600, marginBottom: 4 }}>◆ EVIDENCE SAVED</div>
+                    <div style={{ color: "#5a6a7a", fontSize: 11.5, lineHeight: 1.7 }}>
+                      • Which action was attempted<br />
+                      • Which customers and settings were affected<br />
+                      • Who needs to approve it before it can continue
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {past("comparison") && (
+              <div style={{
+                display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16,
+                marginTop: 24, animation: "slideUp 0.5s ease",
+              }}>
+                <div style={{
+                  background: "linear-gradient(135deg, #1a0a0c 0%, #0f0608 100%)",
+                  border: "1px solid #3a1520",
+                  borderRadius: 10, padding: "24px 20px",
+                  textAlign: "center",
+                }}>
+                  <div style={{ fontSize: 10, color: "#ff5a65", fontWeight: 600, letterSpacing: "0.12em", fontFamily: "var(--display)", textTransform: "uppercase", marginBottom: 14 }}>
+                    Without Gate
+                  </div>
+                  <div style={{
+                    fontFamily: "var(--display)", fontSize: 30, fontWeight: 900,
+                    color: "#ff3246", animation: "countUp 0.6s ease",
+                  }}>
+                    Wrong change
+                  </div>
+                  <div style={{ fontSize: 11, color: "#7a4a50", marginTop: 6, fontFamily: "var(--display)" }}>
+                    reaches customers and billing
+                  </div>
+                  <div style={{ marginTop: 12, fontSize: 10, color: "#5a3a3e", lineHeight: 1.6, fontFamily: "var(--mono)" }}>
+                    Cleanup, support load,<br />revenue risk, trust damage
+                  </div>
+                </div>
+
+                <div style={{
+                  background: "linear-gradient(135deg, #061a10 0%, #040f08 100%)",
+                  border: "1px solid #0a3a20",
+                  borderRadius: 10, padding: "24px 20px",
+                  textAlign: "center",
+                }}>
+                  <div style={{ fontSize: 10, color: "#00e88a", fontWeight: 600, letterSpacing: "0.12em", fontFamily: "var(--display)", textTransform: "uppercase", marginBottom: 14 }}>
+                    With Gate
+                  </div>
+                  <div style={{
+                    fontFamily: "var(--display)", fontSize: 30, fontWeight: 900,
+                    color: "#00e88a", animation: "countUp 0.6s ease 0.2s both",
+                  }}>
+                    Safe stop
+                  </div>
+                  <div style={{ fontSize: 11, color: "#3a7a5a", marginTop: 6, fontFamily: "var(--display)" }}>
+                    before anything goes live
+                  </div>
+                  <div style={{ marginTop: 12, fontSize: 10, color: "#2a5a3a", lineHeight: 1.6, fontFamily: "var(--mono)" }}>
+                    Faster review,<br />clear approval, audit trail
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {past("cta") && (
+              <div style={{
+                marginTop: 32, textAlign: "center",
+                animation: "slideUp 0.6s ease",
+              }}>
+                <div style={{
+                  fontFamily: "var(--display)", fontSize: 22, fontWeight: 800,
+                  color: "#e8edf2", lineHeight: 1.4, marginBottom: 6,
+                }}>
+                  Automation is useful. <span style={{ color: "#00e88a", animation: "glowGreen 2s ease infinite" }}>Protected</span> automation is better.
+                </div>
+                <div style={{ color: "#4a5a6a", fontSize: 13, fontFamily: "var(--display)", marginBottom: 28 }}>
+                  Review before execution. Human approval when risk is high.
+                </div>
+
+                <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
+                  <a
+                    href="https://github.com/calebjangcj-hash/calebear-gate"
+                    target="_blank"
+                    rel="noopener"
+                    style={{
+                      fontFamily: "var(--display)", fontWeight: 700, fontSize: 14,
+                      padding: "14px 36px", borderRadius: 8,
+                      background: "linear-gradient(135deg, #00e88a 0%, #00c878 100%)",
+                      color: "#060808", textDecoration: "none",
+                      boxShadow: "0 0 25px rgba(0,232,138,0.2)",
+                    }}
+                  >
+                    Learn more →
+                  </a>
+                  <button
+                    onClick={reset}
+                    style={{
+                      fontFamily: "var(--display)", fontWeight: 600, fontSize: 14,
+                      padding: "14px 36px", borderRadius: 8,
+                      background: "transparent",
+                      color: "#5a6a7a", border: "1px solid #2a3545",
+                      cursor: "pointer",
+                    }}
+                  >
+                    ↻ Replay
+                  </button>
+                </div>
+
+                <div style={{ marginTop: 32, padding: "14px 0", borderTop: "1px solid #1a2030" }}>
+                  <span style={{ fontSize: 10, color: "#3a4555", fontFamily: "var(--mono)" }}>
+                    Calebear Gate — pre-execution governance for business automation
+                  </span>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
